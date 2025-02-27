@@ -23,7 +23,7 @@ export default function Register() {
                     const token = response.data.token;
                     localStorage.setItem("auth_token", token);
 
-                    router.visit("/chatime");
+                    router.visit("/teahub");
                 })
                 .catch((error) => {
                     console.error("Login error:", error);

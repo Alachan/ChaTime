@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "@/Components/Sidebar";
 import MainPlayground from "@/Components/MainPlayground";
 
-export default function Chatime() {
+export default function TeaHub() {
     const [chatrooms, setChatrooms] = useState([
         { id: 1, name: "Tech Talk" },
         { id: 2, name: "Gaming Hub" },

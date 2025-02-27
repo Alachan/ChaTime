@@ -2,16 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ChatimeController;
+use App\Http\Controllers\TeaHubController;
+use App\Http\Middleware\RedirectIfAuthenticated;
 
-Route::get('/login', function () {
-    return Inertia::render('Auth/Login');
-})->name('login');
+// Auth routes (login/register) with middleware to redirect if already authenticated
+Route::middleware([RedirectIfAuthenticated::class])->group(function () {
+    Route::get('/login', function () {
+        return Inertia::render('Auth/Login');
+    })->name('login');
 
-Route::get('/register', function () {
-    return Inertia::render('Auth/Register');
-})->name('register');
+    Route::get('/register', function () {
+        return Inertia::render('Auth/Register');
+    })->name('register');
+});
 
 Route::middleware(['web', 'auth:sanctum'])->group(function () {
-    Route::get('/chatime', [ChatimeController::class, 'index'])->name('chatime');
+    Route::get('/teahub', [TeaHubController::class, 'index'])->name('teahub');
 });
