@@ -46,7 +46,7 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
         <>
             {/* Mobile Toggle Button */}
             <button
-                className="fixed top-2 left-2 z-50 md:hidden bg-indigo-600 text-white p-2 rounded-md shadow-lg"
+                className="fixed top-4 left-2 z-50 md:hidden bg-emerald-200 text-secondary p-1 rounded-md shadow-lg"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle sidebar"
             >
@@ -91,7 +91,7 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
             >
                 {/* Profile Section */}
                 <div className="p-4 border-b border-gray-700">
-                    <div className="flex items-center relative">
+                    <div className="flex items-center relative md:pl-0 pl-12">
                         <div
                             className="w-12 h-12 rounded-full bg-indigo-400 flex-shrink-0 cursor-pointer overflow-hidden"
                             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
