@@ -1,26 +1,22 @@
 import axios from "axios";
 
+// ✅ Set Axios as default for all requests
 window.axios = axios;
-
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+window.axios.defaults.withCredentials = true;
 
-window.axios.defaults.withCredentials = true; // Allow authentication via cookies
-
-// Retrieve token from localStorage
-const token = localStorage.getItem("auth_token");
-
-if (token) {
-    window.axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-}
-
-// Ensure token is set on every request
+// ✅ Ensure Axios always has the Bearer token
 axios.interceptors.request.use(
-    (request) => {
-        const storedToken = localStorage.getItem("auth_token");
-        if (storedToken) {
-            request.headers["Authorization"] = `Bearer ${storedToken}`;
+    (config) => {
+        const token = localStorage.getItem("auth_token");
+        if (token) {
+            console.log("🛠️ Attaching Bearer token:", token);
+            config.headers["Authorization"] = `Bearer ${token}`;
         }
-        return request;
+        config.withCredentials = true; // Ensures cookies are sent
+        return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        return Promise.reject(error);
+    }
 );

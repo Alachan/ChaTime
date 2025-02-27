@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -29,11 +30,31 @@ class AuthController extends Controller
         // Create a Sanctum token and return it
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
+        // Create the cookie explicitly
+        $cookie = cookie(
+            'auth_token',     // Cookie name
+            $token,           // Cookie value
+            60 * 24 * 7,      // Duration in minutes
+            '/',              // Path
+            '.127.0.0.1',     // Domain (null = current domain)
+            false,            // Secure (set to false for testing)
+            false,            // HttpOnly (set to false for testing)
+            false,            // Raw
+            'lax'             // SameSite
+        );
+
+        // Debug for server-side logging
+        Log::info('Setting auth cookie', [
             'token' => $token,
+            'cookie_created' => !empty($cookie)
         ]);
+
+        return response()
+            ->json([
+                'user' => $user,
+                'token' => $token,
+            ])
+            ->cookie($cookie);
     }
 
     // Login user and return token
@@ -54,11 +75,31 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful',
-            'user' => $user,
+        // Create the cookie explicitly
+        $cookie = cookie(
+            'auth_token',     // Cookie name
+            $token,           // Cookie value
+            60 * 24 * 7,      // Duration in minutes
+            '/',              // Path
+            '.127.0.0.1',             // Domain (null = current domain)
+            false,            // Secure (set to false for testing)
+            false,            // HttpOnly (set to false for testing)
+            false,            // Raw
+            'lax'             // SameSite
+        );
+
+        // Debug for server-side logging
+        Log::info('Setting auth cookie', [
             'token' => $token,
+            'cookie_created' => !empty($cookie)
         ]);
+
+        return response()
+            ->json([
+                'user' => $user,
+                'token' => $token,
+            ])
+            ->cookie($cookie);
     }
 
     // Logout user

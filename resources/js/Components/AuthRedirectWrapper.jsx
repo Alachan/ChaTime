@@ -3,7 +3,6 @@ import axios from "axios";
 
 export default function AuthRedirectWrapper({ children }) {
     const [isAuthChecked, setIsAuthChecked] = useState(false);
-    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem("auth_token");
@@ -20,7 +19,6 @@ export default function AuthRedirectWrapper({ children }) {
         axios
             .get("/api/user")
             .then((response) => {
-                setUser(response.data);
                 setIsAuthChecked(true);
 
                 // Redirect users away from login/register if they're already authenticated

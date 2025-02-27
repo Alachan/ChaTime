@@ -12,17 +12,16 @@ export default function Login() {
     const submit = (e) => {
         e.preventDefault();
         axios.get("/sanctum/csrf-cookie").then(() => {
-            axios.post(route("api.login"), data).then((response) => {
-                const token = response.data.token;
-                localStorage.setItem("auth_token", token);
+            axios
+                .post(route("api.login"), data, {
+                    withCredentials: true,
+                })
+                .then((response) => {
+                    const token = response.data.token;
+                    localStorage.setItem("auth_token", token);
 
-                // Set token in axios defaults and Inertia visits
-                axios.defaults.headers.common[
-                    "Authorization"
-                ] = `Bearer ${token}`;
-
-                router.visit("/chatime");
-            });
+                    router.visit("/chatime");
+                });
         });
     };
 
