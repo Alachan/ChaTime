@@ -41,7 +41,7 @@ class ChatRoomController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'password' => 'nullable|string',
+            'password' => 'nullable|string|min:6',
         ]);
 
         $user = Auth::user();

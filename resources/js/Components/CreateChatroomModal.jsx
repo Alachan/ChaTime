@@ -16,9 +16,8 @@ export default function CreateChatroomModal({
     const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        const newValue = type === "checkbox" ? checked : value;
-        setFormData({ ...formData, [name]: newValue });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
 
         // Clear error for this field when user starts typing
         if (errors[name]) {
@@ -26,31 +25,13 @@ export default function CreateChatroomModal({
         }
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.name.trim()) {
-            newErrors.name = "Chatroom name is required";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
 
         setIsLoading(true);
 
         try {
-            const response = await axios.post(
-                "/api/create-chatroom",
-                formData
-            );
+            const response = await axios.post("/api/create-chatroom", formData);
 
             // Success! Let the parent component know a chatroom was created
             if (onChatroomCreated) {
@@ -203,7 +184,7 @@ export default function CreateChatroomModal({
                             <button
                                 type="submit"
                                 className="mx-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-                                disabled={isLoading}
+                                disabled={isLoading || !formData.name.trim()}
                             >
                                 {isLoading ? (
                                     <span className="flex items-center">

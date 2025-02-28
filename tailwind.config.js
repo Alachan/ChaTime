@@ -19,6 +19,7 @@ export default {
             colors: {
                 primary: "#344e41", //
                 secondary: "#4a4e69",
+                mute: "#edf6f9",
             },
         },
     },
