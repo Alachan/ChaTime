@@ -11,7 +11,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('api.login');;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'me']);
-    Route::post('/profile/update', [UserController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/send-message', [MessageController::class, 'sendMessage']);
     Route::post('/edit-message/{id}', [MessageController::class, 'editMessage']);

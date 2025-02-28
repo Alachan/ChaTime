@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -21,35 +20,31 @@ class UserController extends Controller
     /**
      * Update the authenticated user's profile.
      */
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user();
+    // public function updateProfile(Request $request)
+    // {
+    //     $user = Auth::user();
 
-        $request->validate([
-            'name' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048',
-            'bio' => 'nullable|string',
-        ]);
+    //     $request->validate([
+    //         'name' => 'nullable|string',
+    //         'username' => 'nullable|string|unique:users,username,' . $user->id,
+    //         'profile_picture' => 'nullable|image|max:2048',
+    //         'bio' => 'nullable|string',
+    //     ]);
 
-        if ($request->hasFile('profile_picture')) {
-            // Delete the old profile picture if it exists
-            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-                Storage::disk('public')->delete($user->profile_picture);
-            }
+    //     if ($request->hasFile('profile_picture')) {
+    //         $profileImage = $request->file('profile_picture')->store('profile_pictures', 'public');
+    //         $user->profile_picture = $profileImage;
+    //     }
 
-            // Store the new profile picture
-            $profileImage = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $user->profile_picture = $profileImage;
-        }
+    //     $user->update([
+    //         'name' => $request->name ?? $user->name,
+    //         'username' => $request->username ?? $user->username,
+    //         'bio' => $request->bio ?? $user->bio,
+    //     ]);
 
-        $user->update([
-            'name' => $request->name ?? $user->name,
-            'bio' => $request->bio ?? $user->bio,
-        ]);
-
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'user' => $user,
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'Profile updated successfully',
+    //         'user' => $user,
+    //     ]);
+    // }
 }
