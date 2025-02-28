@@ -1,29 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import axios from "axios";
-import ProfileModal from "./ProfileModal";
 
-export default function Sidebar({ chatrooms, onCreateChatroom }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [profileModalOpen, setProfileModalOpen] = useState(false);
+export default function Sidebar({
+    chatrooms,
+    onCreateChatroom,
+    onEditProfile,
+    user,
+    sidebarControl,
+}) {
+    const [loading, setLoading] = useState(!user);
+    // Use the sidebar control object
+    const { isOpen, toggle, close } = sidebarControl;
 
-    // Fetch user data when component mounts
+    // Toggle dropdown for profile menu
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get("/api/user");
-                setUser(response.data.user);
-            } catch (error) {
-                console.error("Failed to fetch user data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, []);
+        if (user) {
+            setLoading(false);
+        }
+    }, [user]);
 
     const handleLogout = async () => {
         try {
@@ -40,19 +37,9 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
         }
     };
 
-    // Toggle dropdown for profile menu
-    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-
     const handleEditProfile = () => {
-        setProfileModalOpen(true);
+        onEditProfile(); // Call the callback function from parent
         setProfileMenuOpen(false); // Close the dropdown
-    };
-
-    const handleProfileUpdate = (updatedUser) => {
-        // Update the user state with the new data
-        setUser(updatedUser);
-        // Also close the sidebar on mobile after profile update
-        setIsOpen(false);
     };
 
     return (
@@ -60,7 +47,7 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
             {/* Mobile Toggle Button */}
             <button
                 className="fixed top-4 left-2 z-50 md:hidden bg-emerald-200 text-secondary p-1 rounded-md shadow-lg"
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={toggle}
                 aria-label="Toggle sidebar"
             >
                 {isOpen ? (
@@ -170,7 +157,7 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
                 </div>
 
                 {/* Chatrooms Section */}
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
                     <h2 className="text-lg font-semibold mb-3 flex items-center">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -231,18 +218,10 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-                    onClick={() => setIsOpen(false)}
+                    onClick={close}
                     aria-hidden="true"
                 />
             )}
-
-            {/* Profile Modal */}
-            <ProfileModal
-                isOpen={profileModalOpen}
-                onClose={() => setProfileModalOpen(false)}
-                user={user}
-                onProfileUpdate={handleProfileUpdate}
-            />
         </>
     );
 }

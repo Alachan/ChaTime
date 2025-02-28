@@ -11,6 +11,64 @@ use App\Events\UserLeftChat;
 
 class ChatRoomController extends Controller
 {
+
+    public function getPublicChatRooms()
+    {
+        $chatRooms = ChatRoom::where('is_private', false)
+            ->withCount('participants as member_count')
+            ->with('creator:id,name,username')
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+
+        return response()->json($chatRooms);
+    }
+
+    public function getJoinedChatRooms()
+    {
+        $user = Auth::user();
+
+        $chatRooms = $user->chatRooms()
+            ->with('creator:id,name,username')
+            ->withCount('participants as member_count')
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+
+        return response()->json($chatRooms);
+    }
+
+    public function createChatRoom(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'password' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+
+        $chatRoomData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'created_by' => $user->id,
+            'is_private' => !empty($request->password), // Set is_private based on password presence
+        ];
+
+        // Hash password if provided
+        if ($request->password) {
+            $chatRoomData['password'] = bcrypt($request->password);
+        }
+
+        $chatRoom = ChatRoom::create($chatRoomData);
+
+        // Add the creator as a participant
+        $chatRoom->participants()->attach($user->id);
+
+        return response()->json([
+            'message' => 'Chatroom created successfully',
+            'chatroom' => $chatRoom
+        ]);
+    }
+
     public function userTyping(Request $request)
     {
         $user = Auth::user();
@@ -36,7 +94,8 @@ class ChatRoomController extends Controller
         return response()->json(['message' => "{$user->username} joined the chat"]);
     }
 
-    public function leaveChatRoom(Request $request) {
+    public function leaveChatRoom(Request $request)
+    {
         $user = Auth::user();
         $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
         $chatRoom->participants()->detach($user->id);
