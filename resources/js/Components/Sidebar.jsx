@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "@inertiajs/react";
 import { router } from "@inertiajs/react";
 import axios from "axios";
+import ProfileModal from "./ProfileModal";
 
 export default function Sidebar({ chatrooms, onCreateChatroom }) {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
 
     // Fetch user data when component mounts
     useEffect(() => {
@@ -41,6 +42,18 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
 
     // Toggle dropdown for profile menu
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+    const handleEditProfile = () => {
+        setProfileModalOpen(true);
+        setProfileMenuOpen(false); // Close the dropdown
+    };
+
+    const handleProfileUpdate = (updatedUser) => {
+        // Update the user state with the new data
+        setUser(updatedUser);
+        // Also close the sidebar on mobile after profile update
+        setIsOpen(false);
+    };
 
     return (
         <>
@@ -139,12 +152,12 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
                         {/* Profile Dropdown Menu */}
                         {profileMenuOpen && (
                             <div className="absolute top-full left-0 w-full mt-2 py-2 bg-gray-800 rounded-md shadow-lg z-50">
-                                <Link
-                                    href="/profile"
-                                    className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
+                                <button
+                                    onClick={handleEditProfile}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
                                 >
                                     Edit Profile
-                                </Link>
+                                </button>
                                 <button
                                     onClick={handleLogout}
                                     className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
@@ -222,6 +235,14 @@ export default function Sidebar({ chatrooms, onCreateChatroom }) {
                     aria-hidden="true"
                 />
             )}
+
+            {/* Profile Modal */}
+            <ProfileModal
+                isOpen={profileModalOpen}
+                onClose={() => setProfileModalOpen(false)}
+                user={user}
+                onProfileUpdate={handleProfileUpdate}
+            />
         </>
     );
 }
