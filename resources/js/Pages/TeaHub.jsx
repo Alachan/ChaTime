@@ -126,6 +126,11 @@ export default function TeaHub() {
         }
     };
 
+    const handleBackToPlayground = () => {
+        setSelectedChatroom(null);
+        fetchChatrooms();
+    };
+
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
             <Sidebar
@@ -144,6 +149,8 @@ export default function TeaHub() {
                     publicChatrooms={publicChatrooms}
                     onJoinChatroom={handleJoinChatroom}
                     selectedChatroom={selectedChatroom}
+                    currentUser={currentUser}
+                    handleBackToPlayground={handleBackToPlayground}
                 />
             </main>
 

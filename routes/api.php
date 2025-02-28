@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
         [ChatRoomController::class, 'userTyping']
     );
     // Message related routes
+    Route::get('/messages/{chatRoomId}', [MessageController::class, 'getMessages']);
     Route::post('/send-message', [MessageController::class, 'sendMessage']);
     Route::post('/edit-message/{id}', [MessageController::class, 'editMessage']);
     Route::delete('/delete-message/{id}', [MessageController::class, 'deleteMessage']);
