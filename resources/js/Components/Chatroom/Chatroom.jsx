@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import ConfirmationModal from "../Modals/ConfirmationModal"; // Import the new component
+import ConfirmationModal from "../Modals/ConfirmationModal";
+import MessageBubble from "./MessageBubble";
 import axios from "axios";
 
 export default function Chatroom({
@@ -450,75 +451,21 @@ export default function Chatroom({
                 ) : (
                     <div className="space-y-4">
                         {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`flex items-start ${
-                                    message.system
-                                        ? "justify-center"
-                                        : message.user_id === user?.id
-                                        ? "justify-end"
-                                        : ""
-                                }`}
-                            >
-                                {/* System message */}
+                            <div key={message.id}>
                                 {message.system ? (
-                                    <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500">
-                                        {message.message}
+                                    // System message (centered)
+                                    <div className="flex justify-center">
+                                        <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500">
+                                            {message.message}
+                                        </div>
                                     </div>
                                 ) : (
-                                    <>
-                                        {message.user_id !== user?.id && (
-                                            <div className="h-8 w-8 rounded-full bg-indigo-400 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                                                {message.user
-                                                    ?.profile_picture ? (
-                                                    <img
-                                                        src={`/storage/${message.user.profile_picture}`}
-                                                        alt={message.user.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    message.user?.name?.charAt(
-                                                        0
-                                                    ) || "?"
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div
-                                            className={`mx-3 p-3 rounded-lg shadow-sm ${
-                                                message.user_id === user?.id
-                                                    ? "bg-indigo-100"
-                                                    : "bg-white"
-                                            }`}
-                                        >
-                                            {message.user_id !== user?.id && (
-                                                <p className="text-xs text-gray-500 mb-1">
-                                                    {message.user?.name ||
-                                                        "Unknown"}
-                                                </p>
-                                            )}
-                                            <p>{message.message}</p>
-                                            <p className="text-xs text-gray-500 text-right mt-1">
-                                                {formatTime(message.sent_at)}
-                                                {message.edited_at &&
-                                                    " (edited)"}
-                                            </p>
-                                        </div>
-
-                                        {message.user_id === user?.id && (
-                                            <div className="h-8 w-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                                                {user?.profile_picture ? (
-                                                    <img
-                                                        src={`/storage/${user.profile_picture}`}
-                                                        alt={user.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    user?.name?.charAt(0) || "?"
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
+                                    // Regular user message (left or right aligned)
+                                    <MessageBubble
+                                        message={message}
+                                        currentUser={user}
+                                        formatTime={formatTime}
+                                    />
                                 )}
                             </div>
                         ))}

@@ -8,11 +8,11 @@ use App\Http\Middleware\RedirectIfAuthenticated;
 // Auth routes (login/register) with middleware to redirect if already authenticated
 Route::middleware([RedirectIfAuthenticated::class])->group(function () {
     Route::get('/login', function () {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Login');
     })->name('login');
 
     Route::get('/register', function () {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Register');
     })->name('register');
 });
 
