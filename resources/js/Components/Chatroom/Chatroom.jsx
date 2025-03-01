@@ -92,26 +92,23 @@ export default function Chatroom({
         channel.listen("UserTyping", (e) => {
             console.log("User typing:", e);
 
-            // Only handle typing events from other users, not from current user
-            if (e.user_id !== user.id) {
-                // Add user to typing users
-                setTypingUsers((prev) => ({
-                    ...prev,
-                    [e.user_id]: {
-                        username: e.username,
-                        timestamp: Date.now(),
-                    },
-                }));
+            // Add user to typing users
+            setTypingUsers((prev) => ({
+                ...prev,
+                [e.user_id]: {
+                    username: e.username,
+                    timestamp: Date.now(),
+                },
+            }));
 
-                // Remove user after 3 seconds of no typing
-                setTimeout(() => {
-                    setTypingUsers((prev) => {
-                        const newTyping = { ...prev };
-                        delete newTyping[e.user_id];
-                        return newTyping;
-                    });
-                }, 3000);
-            }
+            // Remove user after 3 seconds of no typing
+            setTimeout(() => {
+                setTypingUsers((prev) => {
+                    const newTyping = { ...prev };
+                    delete newTyping[e.user_id];
+                    return newTyping;
+                });
+            }, 3000);
         });
 
         // Cleanup function
