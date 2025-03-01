@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Chatroom from "./Chatroom";
-import ChatroomCard from "./ChatroomCard";
-import PasswordModal from "./PasswordModal";
+import Chatroom from "../Chatroom/Chatroom";
+import ChatroomCard from "../Chatroom/ChatroomCard";
+import PasswordModal from "../Modals/PasswordModal";
 
 export default function MainPlayground({
     publicChatrooms,

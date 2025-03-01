@@ -1,19 +1,22 @@
-import { motion } from "framer-motion";
 import { Head, Link, useForm, router } from "@inertiajs/react";
-import SakuraEffect from "@/Components/SakuraEffect";
+import { motion } from "framer-motion";
+import SakuraEffect from "@/Components/Effects/SakuraEffect";
 import axios from "axios";
 
-export default function Login() {
+export default function Register() {
     const { data, setData, processing, errors } = useForm({
+        username: "",
         email: "",
         password: "",
+        name: "",
     });
 
     const submit = (e) => {
         e.preventDefault();
+
         axios.get("/sanctum/csrf-cookie").then(() => {
             axios
-                .post(route("api.login"), data, {
+                .post(route("api.register"), data, {
                     withCredentials: true,
                 })
                 .then((response) => {
@@ -21,13 +24,16 @@ export default function Login() {
                     localStorage.setItem("auth_token", token);
 
                     router.visit("/teahub");
+                })
+                .catch((error) => {
+                    console.error("Login error:", error);
                 });
         });
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center">
-            <Head title="Login" />
+            <Head title="Register" />
 
             <SakuraEffect />
 
@@ -46,16 +52,33 @@ export default function Login() {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg z-[10]"
             >
+                <Head title="Register" />
+
                 <h2 className="text-center text-2xl font-bold">
-                    Welcome to ChaTime!
-                    <div className="text-sm text-gray-500 mt-1 font-light">
-                        Brew Connections, Steep Conversations
-                    </div>
+                    Now is Chatime
                 </h2>
 
                 <form onSubmit={submit} className="space-y-4">
                     <div>
-                        <label className="block text-primary">Email</label>
+                        <label className="block text-primary">*Username</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
+                            value={data.username}
+                            onChange={(e) =>
+                                setData("username", e.target.value)
+                            }
+                            required
+                        />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm">
+                                {errors.name}
+                            </p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-primary">*Email</label>
                         <input
                             type="email"
                             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
@@ -71,7 +94,7 @@ export default function Login() {
                     </div>
 
                     <div>
-                        <label className="block text-primary">Password</label>
+                        <label className="block text-primary">*Password</label>
                         <input
                             type="password"
                             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
@@ -88,23 +111,41 @@ export default function Login() {
                         )}
                     </div>
 
+                    <div>
+                        <label className="block text-primary">
+                            Display Name
+                        </label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
+                            value={data.name}
+                            onChange={(e) => setData("name", e.target.value)}
+                            required
+                        />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm">
+                                {errors.name}
+                            </p>
+                        )}
+                    </div>
+
                     <motion.button
                         type="submit"
                         whileHover={{ scale: 1.05 }}
                         className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition"
                         disabled={processing}
                     >
-                        {processing ? "Logging in..." : "Login"}
+                        {processing ? "Registering..." : "Register"}
                     </motion.button>
                 </form>
 
                 <p className="text-center text-secondary">
-                    Wanna spill some tea?
+                    Already have a cup?
                     <Link
-                        href="/register"
+                        href="/login"
                         className="text-indigo-500 hover:underline ml-1"
                     >
-                        Join us!
+                        Chat up!
                     </Link>
                 </p>
             </motion.div>

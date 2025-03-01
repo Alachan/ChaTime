@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Sidebar from "@/Components/Sidebar";
-import MainPlayground from "@/Components/MainPlayground";
-import CreateChatroomModal from "@/Components/CreateChatroomModal";
-import ProfileModal from "@/Components/ProfileModal";
+import Sidebar from "@/Components/Layout/Sidebar";
+import MainPlayground from "@/Components/Layout/MainPlayground";
+import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
+import ProfileModal from "@/Components/Modals/ProfileModal";
 
 export default function TeaHub() {
     const [chatrooms, setChatrooms] = useState([]);
