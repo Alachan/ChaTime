@@ -1,6 +1,7 @@
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import SakuraEffect from "@/Components/Effects/SakuraEffect";
+import UserService from "@/Services/UserService";
 import axios from "axios";
 
 export default function Register() {
@@ -11,24 +12,25 @@ export default function Register() {
         name: "",
     });
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
 
-        axios.get("/sanctum/csrf-cookie").then(() => {
-            axios
-                .post(route("api.register"), data, {
-                    withCredentials: true,
-                })
-                .then((response) => {
-                    const token = response.data.token;
-                    localStorage.setItem("auth_token", token);
+        try {
+            // First get CSRF cookie
+            await axios.get("/sanctum/csrf-cookie");
 
-                    router.visit("/teahub");
-                })
-                .catch((error) => {
-                    console.error("Login error:", error);
-                });
-        });
+            // Then attempt register
+            const response = await UserService.register(data);
+
+            // Store token in localStorage
+            const token = response.data.token;
+            localStorage.setItem("auth_token", token);
+
+            // Navigate to TeaHub
+            router.visit("/teahub");
+        } catch (error) {
+            console.error("Login error:", error);
+        }
     };
 
     return (
