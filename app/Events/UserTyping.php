@@ -2,16 +2,14 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 
-class UserTyping
+class UserTyping implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,7 +17,8 @@ class UserTyping
     public $username;
     public $chatRoomId;
 
-    public function __construct($userId, $chatRoomId) {
+    public function __construct($userId, $chatRoomId)
+    {
         $user = User::find($userId);
 
         $this->userId = $userId;
@@ -39,7 +38,8 @@ class UserTyping
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return [
             'user_id' => $this->userId,
             'username' => $this->username,

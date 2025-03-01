@@ -4,7 +4,7 @@ import Sidebar from "@/Components/Layout/Sidebar";
 import MainPlayground from "@/Components/Layout/MainPlayground";
 import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
 import ProfileModal from "@/Components/Modals/ProfileModal";
-import { toast } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function TeaHub() {
     const [chatrooms, setChatrooms] = useState([]);
@@ -197,6 +197,27 @@ export default function TeaHub() {
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+            <Toaster
+                position="top-center"
+                reverseOrder={false}
+                toastOptions={{
+                    style: {
+                        background: "rgba(255, 255, 255, 0.1)",
+                        backdropFilter: "blur(10px)",
+                        color: "#4a4e69",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+                        maxWidth: "350px", // Prevents overly wide toasts
+                        width: "auto", // Adapts width dynamically
+                        minWidth: "150px", // Avoids shrinking too much
+                        textAlign: "left", // Keeps text aligned naturally
+                        padding: "12px 0px 12px 33px", // Keeps spacing balanced
+                        fontSize: "16px",
+                        fontWeight: "500",
+                    },
+                }}
+            />
             <Sidebar
                 chatrooms={chatrooms}
                 onCreateChatroom={handleCreateChatroom}

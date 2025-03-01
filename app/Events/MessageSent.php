@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,7 +19,8 @@ class MessageSent
     /**
      * Create a new event instance.
      */
-    public function __construct($message) {
+    public function __construct($message)
+    {
         $this->message = $message;
     }
 
@@ -35,7 +36,8 @@ class MessageSent
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return [
             'id' => $this->message->id,
             'user_id' => $this->message->user_id,

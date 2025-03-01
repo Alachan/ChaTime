@@ -2,16 +2,16 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use App\Models\ChatRoom;
+use Illuminate\Support\Facades\Log;
 
-class UserLeftChat
+class UserLeftChat implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,12 +22,20 @@ class UserLeftChat
 
     public function __construct($userId, $chatRoomId)
     {
+        // Safely retrieve user
         $user = User::find($userId);
+        // Safely retrieve chatroom
+        $chatRoom = ChatRoom::find($chatRoomId);
 
         $this->userId = $userId;
         $this->username = $user ? $user->username : 'Unknown User';
+
+        // Safely get member count
+        $this->memberCount = $chatRoom
+            ? $chatRoom->participants()->count()
+            : 0;
+
         $this->chatRoomId = $chatRoomId;
-        $this->memberCount = count($user->chatRooms()->find($chatRoomId)->users);
     }
 
     /**
@@ -44,10 +52,19 @@ class UserLeftChat
 
     public function broadcastWith()
     {
-        return [
-            'user_id' => $this->userId,
-            'username' => $this->username,
-            'member_count' => $this->memberCount
-        ];
+        try {
+            return [
+                'user_id' => $this->userId,
+                'username' => $this->username,
+                'member_count' => $this->memberCount
+            ];
+        } catch (\Exception $e) {
+            // Log any unexpected errors during broadcasting
+            Log::error('Error in UserLeftChat broadcastWith', [
+                'error' => $e->getMessage(),
+                'user_id' => $this->userId,
+                'chatroom_id' => $this->chatRoomId
+            ]);
+        }
     }
 }

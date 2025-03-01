@@ -10,14 +10,15 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageDeleted
+class MessageDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $messageId;
     public $chatRoomId;
 
-    public function __construct($messageId, $chatRoomId) {
+    public function __construct($messageId, $chatRoomId)
+    {
         $this->messageId = $messageId;
         $this->chatRoomId = $chatRoomId;
     }
@@ -34,7 +35,8 @@ class MessageDeleted
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return ['id' => $this->messageId];
     }
 }
