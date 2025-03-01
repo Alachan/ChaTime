@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import ConfirmationModal from "../Modals/ConfirmationModal"; // Import the new component
 import axios from "axios";
 
 export default function Chatroom({
@@ -7,13 +8,9 @@ export default function Chatroom({
     onLeave,
     handleBackToPlayground,
 }) {
-    const [messages, setMessages] = useState([]);
-    const [inputMessage, setInputMessage] = useState("");
-    const [isTyping, setIsTyping] = useState(false);
-    const [typingUsers, setTypingUsers] = useState({});
-    const [loading, setLoading] = useState(true);
-    const messageEndRef = useRef(null);
-    const typingTimeoutRef = useRef(null);
+    // State for leave confirmation modal
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [leavingInProgress, setLeavingInProgress] = useState(false);
 
     // State for pagination and infinite scrolling
     const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -22,6 +19,14 @@ export default function Chatroom({
     const [showHistorical, setShowHistorical] = useState(false);
     const messageAreaRef = useRef(null);
     const shouldScrollToBottom = useRef(true);
+
+    const [messages, setMessages] = useState([]);
+    const [inputMessage, setInputMessage] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingUsers, setTypingUsers] = useState({});
+    const [loading, setLoading] = useState(true);
+    const messageEndRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
 
     // Fetch messages on component mount or when chatroom changes
     useEffect(() => {
@@ -80,6 +85,33 @@ export default function Chatroom({
             }
         };
     }, [hasMoreMessages, loadingMore, oldestMessageId]);
+
+    // Open the leave confirmation modal
+    const confirmLeaveChatroom = () => {
+        setShowLeaveModal(true);
+    };
+
+    // Actual leave chatroom function
+    const handleLeaveChatroom = async () => {
+        setLeavingInProgress(true);
+        try {
+            await axios.post("/api/leave-chatroom", {
+                chat_room_id: chatroom.id,
+            });
+
+            if (onLeave) {
+                onLeave();
+            }
+
+            // Navigate back to playground
+            handleBackToPlayground();
+        } catch (error) {
+            console.error("Error leaving chatroom:", error);
+        } finally {
+            setLeavingInProgress(false);
+            setShowLeaveModal(false);
+        }
+    };
 
     // Fetch initial messages
     const fetchMessages = async () => {
@@ -219,20 +251,6 @@ export default function Chatroom({
         }
     };
 
-    const handleLeaveChatroom = async () => {
-        try {
-            await axios.post("/api/leave-chatroom", {
-                chat_room_id: chatroom.id,
-            });
-
-            if (onLeave) {
-                onLeave();
-            }
-        } catch (error) {
-            console.error("Error leaving chatroom:", error);
-        }
-    };
-
     const handleKeyDown = (e) => {
         // If Enter is pressed without Shift, send the message
         if (e.key === "Enter" && !e.shiftKey) {
@@ -286,12 +304,25 @@ export default function Chatroom({
                     </svg>
                 </button>
                 <button
-                    onClick={handleLeaveChatroom}
+                    onClick={confirmLeaveChatroom}
                     className="text-red-500 hover:text-red-700 text-sm"
                 >
                     Leave Chatroom
                 </button>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showLeaveModal}
+                onClose={() => setShowLeaveModal(false)}
+                onConfirm={handleLeaveChatroom}
+                title={`Leave ${chatroom?.name}`}
+                message={`Are you sure you want to leave "${chatroom?.name}"? You can always join back later.`}
+                confirmText="Leave"
+                cancelText="Cancel"
+                confirmButtonClass="bg-red-500 hover:bg-red-600"
+                isLoading={leavingInProgress}
+            />
 
             {/* Message Area - now with ref for scroll tracking */}
             <div
