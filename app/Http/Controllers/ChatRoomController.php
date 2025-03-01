@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ChatRoom;
 use App\Events\UserTyping;
 use App\Events\UserJoinedChat;
-use App\Models\ChatRoom;
 use App\Events\UserLeftChat;
+use App\Events\PersonalNotification;
 
 class ChatRoomController extends Controller
 {
@@ -50,6 +51,7 @@ class ChatRoomController extends Controller
             'description' => $request->description,
             'created_by' => $user->id,
             'is_private' => !empty($request->password), // Set is_private based on password presence
+            'last_message_at' => now(),
         ];
 
         // Hash password if provided
@@ -62,8 +64,20 @@ class ChatRoomController extends Controller
         // Add the creator as a participant
         $chatRoom->participants()->attach($user->id);
 
-        // Manually load the member count
-        $chatRoom->member_count = 1;
+        // Manually load the creator relationship and participant count
+        $chatRoom->load('creator:id,name,username');
+        $chatRoom->loadCount('participants as member_count');
+
+        // Broadcast to creator
+        broadcast(new PersonalNotification(
+            $user->id,
+            'success',
+            'You successfully created the chatroom ' . $chatRoom->name . '!',
+            [
+                'action' => 'created',
+                'chatroom' => $chatRoom->toArray()
+            ]
+        ));
 
         return response()->json([
             'message' => 'Chatroom created successfully',
@@ -89,21 +103,74 @@ class ChatRoomController extends Controller
             return response()->json(['error' => 'Incorrect password'], 403);
         }
 
-        $chatRoom->participants()->syncWithoutDetaching([$user->id]);
+        // Check if user is already a member to avoid duplicate events
+        $alreadyJoined = $chatRoom->participants()->where('user_id', $user->id)->exists();
 
-        broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
+        if (!$alreadyJoined) {
+            // Add user to participants
+            $chatRoom->participants()->attach($user->id);
 
-        return response()->json(['message' => "{$user->username} joined the chat"]);
+            // Get updated chat room with member count
+            $chatRoom->refresh();
+            $chatRoom->loadCount('participants as member_count');
+
+            // Broadcast to <other></other>
+            broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
+
+            // Personal notification to the user
+            broadcast(new PersonalNotification(
+                $user->id,
+                'success',
+                'You joined chatroom: ' . $chatRoom->name . ' successfully!',
+                [
+                    'action' => 'joined',
+                    'chatroom' => $chatRoom->toArray()
+                ]
+            ));
+        }
+
+        // Return the updated chat room data
+        return response()->json([
+            'message' => "{$user->username} joined the chat",
+            'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
+        ]);
     }
 
     public function leaveChatRoom(Request $request)
     {
         $user = Auth::user();
         $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
+
+        // Store info before removal
+        $chatroomInfo = [
+            'id' => $chatRoom->id,
+            'name' => $chatRoom->name
+        ];
+
+        // Remove user from participants
         $chatRoom->participants()->detach($user->id);
 
+        // Get updated member count before broadcasting
+        $chatRoom->refresh();
+        $chatRoom->loadCount('participants as member_count');
+
+        // Broadcast to others that user left the chat
         broadcast(new UserLeftChat($user->id, $chatRoom->id))->toOthers();
 
-        return response()->json(['message' => "{$user->username} left the chat"]);
+        // Personal notification to the user who left
+        broadcast(new PersonalNotification(
+            $user->id,
+            'info',
+            'You left chatroom: ' . $chatroomInfo['name'] . ' successfully!',
+            [
+                'action' => 'left',
+                'chatroom' => $chatroomInfo
+            ]
+        ));
+
+        return response()->json([
+            'message' => "{$user->username} left the chat",
+            'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
+        ]);
     }
 }

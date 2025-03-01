@@ -10,6 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use App\Models\ChatRoom;
 
 class UserJoinedChat
 {
@@ -18,13 +19,17 @@ class UserJoinedChat
     public $userId;
     public $username;
     public $chatRoomId;
+    public $memberCount;
 
-    public function __construct($userId, $chatRoomId) {
+    public function __construct($userId, $chatRoomId)
+    {
         $user = User::find($userId);
+        $chatRoom = ChatRoom::withCount('participants as member_count')->find($chatRoomId);
 
         $this->userId = $userId;
         $this->username = $user ? $user->username : 'Unknown User';
         $this->chatRoomId = $chatRoomId;
+        $this->memberCount = $chatRoom ? $chatRoom->member_count : 0;
     }
 
     /**
@@ -39,10 +44,12 @@ class UserJoinedChat
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return [
             'user_id' => $this->userId,
             'username' => $this->username,
+            'member_count' => $this->memberCount
         ];
     }
 }
