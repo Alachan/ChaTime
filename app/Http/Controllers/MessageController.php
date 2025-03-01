@@ -9,6 +9,8 @@ use App\Models\ChatRoom;
 use App\Events\MessageSent;
 use App\Events\MessageEdited;
 use App\Events\MessageDeleted;
+use Illuminate\Support\Facades\Log;
+
 
 class MessageController extends Controller
 {
@@ -74,16 +76,31 @@ class MessageController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $message = Message::create([
-            'user_id' => Auth::id(),
-            'chat_room_id' => $request->chat_room_id,
-            'message' => $request->message,
-            'sent_at' => now(),
-        ]);
+        try {
+            Log::info('Message send attempt', [
+                'user_id' => Auth::id(),
+                'chat_room_id' => $request->chat_room_id,
+                'message' => $request->message
+            ]);
 
-        broadcast(new MessageSent($message))->toOthers();
+            $message = Message::create([
+                'user_id' => Auth::id(),
+                'chat_room_id' => $request->chat_room_id,
+                'message' => $request->message,
+                'sent_at' => now(),
+            ]);
 
-        return response()->json($message);
+            broadcast(new MessageSent($message))->toOthers();
+
+            return response()->json($message);
+        } catch (\Exception $e) {
+            Log::error('Message send error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Failed to send message'], 500);
+        }
     }
 
     public function editMessage(Request $request, $id)

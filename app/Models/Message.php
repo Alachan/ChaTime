@@ -9,6 +9,9 @@ class Message extends Model
 {
     use SoftDeletes;
 
+    // Disable Laravel's default timestamps
+    public $timestamps = false;
+
     // The attributes that are mass assignable.
     protected $fillable = [
         'user_id',
