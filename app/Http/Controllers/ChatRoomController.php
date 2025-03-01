@@ -14,8 +14,7 @@ class ChatRoomController extends Controller
 
     public function getPublicChatRooms()
     {
-        $chatRooms = ChatRoom::where('is_private', false)
-            ->withCount('participants as member_count')
+        $chatRooms = ChatRoom::withCount('participants as member_count')
             ->with('creator:id,name,username')
             ->orderBy('last_message_at', 'desc')
             ->get();
@@ -62,6 +61,9 @@ class ChatRoomController extends Controller
 
         // Add the creator as a participant
         $chatRoom->participants()->attach($user->id);
+
+        // Manually load the member count
+        $chatRoom->member_count = 1;
 
         return response()->json([
             'message' => 'Chatroom created successfully',
