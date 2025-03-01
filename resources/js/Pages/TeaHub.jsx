@@ -148,6 +148,7 @@ export default function TeaHub() {
                 chatrooms={chatrooms}
                 onCreateChatroom={handleCreateChatroom}
                 onEditProfile={handleEditProfile}
+                onClickChatroom={handleEnterChatroom}
                 user={currentUser}
                 sidebarControl={{
                     isOpen: sidebarOpen,

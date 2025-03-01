@@ -6,6 +6,7 @@ export default function Sidebar({
     chatrooms,
     onCreateChatroom,
     onEditProfile,
+    onClickChatroom,
     user,
     sidebarControl,
 }) {
@@ -179,7 +180,14 @@ export default function Sidebar({
                         <ul className="space-y-2">
                             {chatrooms.map((room) => (
                                 <li key={room.id}>
-                                    <button className="w-full flex items-center text-left p-3 rounded-md hover:bg-gray-800 transition-colors">
+                                    <button
+                                        className="w-full flex items-center text-left p-3 rounded-md hover:bg-gray-800 transition-colors"
+                                        onClick={() => {
+                                            onClickChatroom(room.id);
+                                            // Always call close - it will only affect mobile view
+                                            close();
+                                        }}
+                                    >
                                         <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
                                         <span className="truncate">
                                             {room.name}
