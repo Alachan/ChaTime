@@ -92,23 +92,26 @@ export default function Chatroom({
         channel.listen("UserTyping", (e) => {
             console.log("User typing:", e);
 
-            // Add user to typing users
-            setTypingUsers((prev) => ({
-                ...prev,
-                [e.user_id]: {
-                    username: e.username,
-                    timestamp: Date.now(),
-                },
-            }));
+            // Only handle typing events from other users, not from current user
+            if (e.user_id !== user.id) {
+                // Add user to typing users
+                setTypingUsers((prev) => ({
+                    ...prev,
+                    [e.user_id]: {
+                        username: e.username,
+                        timestamp: Date.now(),
+                    },
+                }));
 
-            // Remove user after 3 seconds of no typing
-            setTimeout(() => {
-                setTypingUsers((prev) => {
-                    const newTyping = { ...prev };
-                    delete newTyping[e.user_id];
-                    return newTyping;
-                });
-            }, 3000);
+                // Remove user after 3 seconds of no typing
+                setTimeout(() => {
+                    setTypingUsers((prev) => {
+                        const newTyping = { ...prev };
+                        delete newTyping[e.user_id];
+                        return newTyping;
+                    });
+                }, 3000);
+            }
         });
 
         // Cleanup function
@@ -118,7 +121,7 @@ export default function Chatroom({
             channel.stopListening("MessageSent");
             channel.stopListening("UserTyping");
         };
-    }, [chatroom?.id]);
+    }, [chatroom?.id, user?.id]);
 
     // Fetch messages on component mount or when chatroom changes
     useEffect(() => {
@@ -350,6 +353,27 @@ export default function Chatroom({
         });
     };
 
+    // Get list of usernames who are currently typing, excluding the current user
+    const getTypingUsernames = () => {
+        // Convert typing users object to array of usernames
+        return Object.values(typingUsers)
+            .map((user) => user.username)
+            .filter(Boolean); // Remove any undefined/null values
+    };
+
+    // Format the typing indicator text
+    const formatTypingText = (usernames) => {
+        if (usernames.length === 0) return "";
+        if (usernames.length === 1) return `${usernames[0]} is typing...`;
+        if (usernames.length === 2)
+            return `${usernames[0]} and ${usernames[1]} are typing...`;
+        return `${usernames.length} people are typing...`;
+    };
+
+    // Get typing usernames array
+    const typingUsernames = getTypingUsernames();
+    const typingText = formatTypingText(typingUsernames);
+
     return (
         <div className="flex flex-col h-screen">
             {/* Confirmation Modal */}
@@ -470,10 +494,12 @@ export default function Chatroom({
                             </div>
                         ))}
 
-                        {/* Typing indicators */}
-                        {Object.keys(typingUsers).length > 0 && (
+                        {/* Typing indicators - Only shown if there ARE users typing AND they're not the current user */}
+                        {typingUsernames.length > 0 && (
                             <div className="flex items-start">
-                                <div className="h-8 w-8 rounded-full bg-gray-300 flex-shrink-0"></div>
+                                <div className="h-8 w-8 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-white font-bold">
+                                    ?
+                                </div>
                                 <div className="ml-3 bg-white p-2 rounded-lg shadow-sm">
                                     <div className="flex space-x-1">
                                         <span className="animate-bounce">
@@ -501,8 +527,15 @@ export default function Chatroom({
                 )}
             </div>
 
-            {/* Message Input */}
-            <div className="bg-white border-t p-4 ">
+            {/* Message Input with Typing Indicator Above */}
+            <div className="bg-white border-t p-4">
+                {/* Typing indicator above input */}
+                {typingText && (
+                    <div className="text-xs text-gray-500 italic mb-2">
+                        {typingText}
+                    </div>
+                )}
+
                 <form
                     onSubmit={handleSendMessage}
                     className="flex items-center"
