@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -16,6 +17,14 @@ class UserController extends Controller
         return response()->json([
             'user' => $request->user(),
         ]);
+    }
+
+    public function getBasicInfo($id)
+    {
+        $user = User::select('id', 'name', 'username', 'profile_picture')
+            ->findOrFail($id);
+
+        return response()->json($user);
     }
 
     /**

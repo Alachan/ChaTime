@@ -13,6 +13,21 @@ use Illuminate\Support\Facades\Log;
 
 class ChatRoomController extends Controller
 {
+    public function getMembers($roomId)
+    {
+        $chatRoom = ChatRoom::findOrFail($roomId);
+
+        // Check if the user is authorized to see this room's members
+        if (!$chatRoom->participants()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $members = $chatRoom->participants()
+            ->select('id', 'name', 'username', 'profile_picture')
+            ->get();
+
+        return response()->json($members);
+    }
 
     public function getPublicChatRooms()
     {

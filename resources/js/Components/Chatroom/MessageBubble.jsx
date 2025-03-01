@@ -1,9 +1,22 @@
-export default function MessageBubble({ message, currentUser, formatTime }) {
+import {
+    formatMessageTime,
+    getUserAvatar,
+    formatMessageText,
+} from "@/Utils/formatter";
+
+export default function MessageBubble({ message, currentUser }) {
     // Check if this message is from the current user
     const isMyMessage = message.user_id === currentUser?.id;
 
     // Get the appropriate user data (either message sender or current user)
     const bubbleUser = isMyMessage ? currentUser : message.user;
+
+    // Create a fallback display name for when user data is missing
+    const displayName =
+        bubbleUser?.name || bubbleUser?.username || "Unknown User";
+
+    // Get avatar information
+    const avatar = getUserAvatar(bubbleUser);
 
     return (
         <div
@@ -14,14 +27,14 @@ export default function MessageBubble({ message, currentUser, formatTime }) {
             {/* Only show other user's avatar on the left */}
             {!isMyMessage && (
                 <div className="h-8 w-8 rounded-full bg-indigo-400 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                    {bubbleUser?.profile_picture ? (
+                    {avatar.type === "image" ? (
                         <img
-                            src={`/storage/${bubbleUser.profile_picture}`}
-                            alt={bubbleUser.name}
+                            src={avatar.content}
+                            alt={displayName}
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        bubbleUser?.name?.charAt(0) || "?"
+                        avatar.content
                     )}
                 </div>
             )}
@@ -34,15 +47,18 @@ export default function MessageBubble({ message, currentUser, formatTime }) {
             >
                 {/* Only show name for other users' messages */}
                 {!isMyMessage && (
-                    <p className="text-xs text-gray-500 mb-1">
-                        {bubbleUser?.name || "Unknown"}
-                    </p>
+                    <p className="text-xs text-gray-500 mb-1">{displayName}</p>
                 )}
 
-                <p>{message.message}</p>
+                {/* Using safe HTML for formatted message text */}
+                <p
+                    dangerouslySetInnerHTML={{
+                        __html: formatMessageText(message.message),
+                    }}
+                />
 
                 <p className="text-xs text-gray-500 text-right mt-1">
-                    {formatTime(message.sent_at)}
+                    {formatMessageTime(message.sent_at)}
                     {message.edited_at && " (edited)"}
                 </p>
             </div>
@@ -50,14 +66,14 @@ export default function MessageBubble({ message, currentUser, formatTime }) {
             {/* Only show your avatar on the right */}
             {isMyMessage && (
                 <div className="h-8 w-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                    {currentUser?.profile_picture ? (
+                    {avatar.type === "image" ? (
                         <img
-                            src={`/storage/${currentUser.profile_picture}`}
-                            alt={currentUser.name}
+                            src={avatar.content}
+                            alt={displayName}
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        currentUser?.name?.charAt(0) || "?"
+                        avatar.content
                     )}
                 </div>
             )}
