@@ -116,13 +116,24 @@ export default function TeaHub() {
             (room) => room.id === chatroomId
         );
         if (selectedRoom) {
-            setSelectedChatroom(selectedRoom);
-            // TODO: Implement actual joining logic with API call
+            // Create a copy with updated member count
+            const updatedRoom = {
+                ...selectedRoom,
+                member_count: selectedRoom.member_count + 1,
+            };
+            setSelectedChatroom(updatedRoom);
 
             // Add to joined chatrooms if not already there
             if (!chatrooms.some((room) => room.id === chatroomId)) {
-                setChatrooms([...chatrooms, selectedRoom]);
+                setChatrooms([...chatrooms, updatedRoom]);
             }
+        }
+    };
+
+    const handleEnterChatroom = (chatroomId) => {
+        const selectedRoom = chatrooms.find((r) => r.id === chatroomId);
+        if (selectedRoom) {
+            setSelectedChatroom(selectedRoom);
         }
     };
 
@@ -147,7 +158,9 @@ export default function TeaHub() {
             <main className="flex-1">
                 <MainPlayground
                     publicChatrooms={publicChatrooms}
+                    joinedChatrooms={chatrooms}
                     onJoinChatroom={handleJoinChatroom}
+                    onEnterChatroom={handleEnterChatroom}
                     selectedChatroom={selectedChatroom}
                     currentUser={currentUser}
                     handleBackToPlayground={handleBackToPlayground}
