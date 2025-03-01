@@ -9,6 +9,7 @@ use App\Events\UserTyping;
 use App\Events\UserJoinedChat;
 use App\Events\UserLeftChat;
 use App\Events\PersonalNotification;
+use Illuminate\Support\Facades\Log;
 
 class ChatRoomController extends Controller
 {
@@ -138,39 +139,66 @@ class ChatRoomController extends Controller
 
     public function leaveChatRoom(Request $request)
     {
-        $user = Auth::user();
-        $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
+        try {
+            // Retrieve authenticated user and chatroom
+            $user = Auth::user();
 
-        // Store info before removal
-        $chatroomInfo = [
-            'id' => $chatRoom->id,
-            'name' => $chatRoom->name
-        ];
+            // Find the chatroom and log its initial state
+            $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
 
-        // Remove user from participants
-        $chatRoom->participants()->detach($user->id);
+            // Store info before removal
+            $chatroomInfo = [
+                'id' => $chatRoom->id,
+                'name' => $chatRoom->name
+            ];
 
-        // Get updated member count before broadcasting
-        $chatRoom->refresh();
-        $chatRoom->loadCount('participants as member_count');
+            // Remove user from participants
+            $chatRoom->participants()->detach($user->id);
 
-        // Broadcast to others that user left the chat
-        broadcast(new UserLeftChat($user->id, $chatRoom->id))->toOthers();
+            // Refresh and get updated member count
+            $chatRoom->refresh();
+            $chatRoom->loadCount('participants as member_count');
 
-        // Personal notification to the user who left
-        broadcast(new PersonalNotification(
-            $user->id,
-            'info',
-            'You left chatroom: ' . $chatroomInfo['name'] . ' successfully!',
-            [
-                'action' => 'left',
-                'chatroom' => $chatroomInfo
-            ]
-        ));
+            // Broadcast to others that user left the chat
+            try {
+                broadcast(new UserLeftChat($user->id, $chatRoom->id))->toOthers();
+            } catch (\Exception $broadcastError) {
+                Log::warning('UserLeftChat Event Broadcast Failed', [
+                    'error' => $broadcastError->getMessage(),
+                    'user_id' => $user->id,
+                    'chatroom_id' => $chatRoom->id
+                ]);
+            }
 
-        return response()->json([
-            'message' => "{$user->username} left the chat",
-            'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
-        ]);
+            // Personal notification to the user
+            try {
+                broadcast(new PersonalNotification(
+                    $user->id,
+                    'info',
+                    'You left chatroom: ' . $chatroomInfo['name'] . ' successfully!',
+                    [
+                        'action' => 'left',
+                        'chatroom' => $chatroomInfo
+                    ]
+                ));
+            } catch (\Exception $notificationError) {
+                Log::warning('Personal Notification Broadcast Failed', [
+                    'error' => $notificationError->getMessage(),
+                    'user_id' => $user->id,
+                    'chatroom_name' => $chatroomInfo['name']
+                ]);
+            }
+
+            return response()->json([
+                'message' => "{$user->username} left the chat",
+                'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
+            ]);
+        } catch (\Exception $e) {
+            // Return error response
+            return response()->json([
+                'message' => 'Failed to leave chatroom',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

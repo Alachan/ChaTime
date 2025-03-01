@@ -2,13 +2,12 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class PersonalNotification implements ShouldBroadcast
 {
@@ -35,30 +34,24 @@ class PersonalNotification implements ShouldBroadcast
         $this->data = $data;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
+        $channelName = 'user.' . $this->userId;
+
         return [
-            new PrivateChannel('user.' . $this->userId),
+            new PrivateChannel($channelName),
         ];
     }
 
-    /**
-     * The data to broadcast.
-     *
-     * @return array
-     */
-    public function broadcastWith()
+    public function broadcastWith(): array
     {
-        return [
+        $payload = [
             'type' => $this->type,
             'message' => $this->message,
             'data' => $this->data,
             'timestamp' => now()->toIso8601String(),
         ];
+
+        return $payload;
     }
 }
