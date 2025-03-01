@@ -18,13 +18,16 @@ class UserLeftChat
     public $userId;
     public $username;
     public $chatRoomId;
+    public $memberCount;
 
-    public function __construct($userId, $chatRoomId) {
+    public function __construct($userId, $chatRoomId)
+    {
         $user = User::find($userId);
 
         $this->userId = $userId;
         $this->username = $user ? $user->username : 'Unknown User';
         $this->chatRoomId = $chatRoomId;
+        $this->memberCount = count($user->chatRooms()->find($chatRoomId)->users);
     }
 
     /**
@@ -39,10 +42,12 @@ class UserLeftChat
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return [
             'user_id' => $this->userId,
             'username' => $this->username,
+            'member_count' => $this->memberCount
         ];
     }
 }

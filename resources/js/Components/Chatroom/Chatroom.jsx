@@ -8,6 +8,8 @@ export default function Chatroom({
     onLeave,
     handleBackToPlayground,
 }) {
+    const [memberCount, setMemberCount] = useState(chatroom?.member_count || 0);
+
     // State for leave confirmation modal
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [leavingInProgress, setLeavingInProgress] = useState(false);
@@ -27,6 +29,95 @@ export default function Chatroom({
     const [loading, setLoading] = useState(true);
     const messageEndRef = useRef(null);
     const typingTimeoutRef = useRef(null);
+
+    // Set up real-time event listeners for this chatroom
+    useEffect(() => {
+        if (!chatroom?.id) return;
+
+        // Initial count from props
+        setMemberCount(chatroom.member_count || 0);
+
+        // Subscribe to private channel for this chatroom
+        const channel = window.Echo.private(`chatroom-${chatroom.id}`);
+
+        // Listen for user joined event
+        channel.listen("UserJoinedChat", (e) => {
+            console.log("User joined event received:", e);
+            // Update member count
+            setMemberCount(e.member_count);
+
+            // Show join notification
+            const joinMessage = {
+                id: `join-${Date.now()}`,
+                message: `${e.username} joined the chat`,
+                system: true,
+                sent_at: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, joinMessage]);
+        });
+
+        // Listen for user left event
+        channel.listen("UserLeftChat", (e) => {
+            console.log("User left event received:", e);
+            // Update member count
+            setMemberCount(e.member_count);
+
+            // Show leave notification
+            const leaveMessage = {
+                id: `leave-${Date.now()}`,
+                message: `${e.username} left the chat`,
+                system: true,
+                sent_at: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, leaveMessage]);
+        });
+
+        // Listen for messages
+        channel.listen("MessageSent", (e) => {
+            console.log("Message received:", e);
+
+            // Add message to list
+            const newMessage = {
+                id: e.id,
+                user_id: e.user_id,
+                message: e.message,
+                sent_at: e.sent_at,
+            };
+
+            setMessages((prev) => [...prev, newMessage]);
+        });
+
+        // Listen for typing
+        channel.listen("UserTyping", (e) => {
+            console.log("User typing:", e);
+
+            // Add user to typing users
+            setTypingUsers((prev) => ({
+                ...prev,
+                [e.user_id]: {
+                    username: e.username,
+                    timestamp: Date.now(),
+                },
+            }));
+
+            // Remove user after 3 seconds of no typing
+            setTimeout(() => {
+                setTypingUsers((prev) => {
+                    const newTyping = { ...prev };
+                    delete newTyping[e.user_id];
+                    return newTyping;
+                });
+            }, 3000);
+        });
+
+        // Cleanup function
+        return () => {
+            channel.stopListening("UserJoinedChat");
+            channel.stopListening("UserLeftChat");
+            channel.stopListening("MessageSent");
+            channel.stopListening("UserTyping");
+        };
+    }, [chatroom?.id]);
 
     // Fetch messages on component mount or when chatroom changes
     useEffect(() => {
@@ -130,15 +221,6 @@ export default function Chatroom({
             setOldestMessageId(data.oldest_id);
         } catch (error) {
             console.error("Error fetching messages:", error);
-            // Fallback for demo purposes
-            setMessages([
-                {
-                    id: 1,
-                    user: { name: "System", id: 0 },
-                    message: "Welcome to the chat room!",
-                    sent_at: new Date().toISOString(),
-                },
-            ]);
         } finally {
             setLoading(false);
         }
@@ -269,6 +351,19 @@ export default function Chatroom({
 
     return (
         <div className="flex flex-col h-screen">
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showLeaveModal}
+                onClose={() => setShowLeaveModal(false)}
+                onConfirm={handleLeaveChatroom}
+                title={`Leave ${chatroom?.name}`}
+                message={`Are you sure you want to leave "${chatroom?.name}"? You can always join back later.`}
+                confirmText="Leave"
+                cancelText="Cancel"
+                confirmButtonClass="bg-red-500 hover:bg-red-600"
+                isLoading={leavingInProgress}
+            />
+
             {/* Chatroom Header */}
             <div className="bg-white border-b md:pl-4 pl-12 py-3 flex items-center justify-between shadow-sm">
                 <div>
@@ -279,7 +374,7 @@ export default function Chatroom({
                 </div>
                 <div className="flex items-center space-x-2 pr-4">
                     <span className="text-sm text-gray-500">
-                        {chatroom.member_count || 0} members
+                        {memberCount} members
                     </span>
                 </div>
             </div>
@@ -302,6 +397,7 @@ export default function Chatroom({
                             clipRule="evenodd"
                         />
                     </svg>
+                    Back to TeaHub
                 </button>
                 <button
                     onClick={confirmLeaveChatroom}
@@ -310,19 +406,6 @@ export default function Chatroom({
                     Leave Chatroom
                 </button>
             </div>
-
-            {/* Confirmation Modal */}
-            <ConfirmationModal
-                isOpen={showLeaveModal}
-                onClose={() => setShowLeaveModal(false)}
-                onConfirm={handleLeaveChatroom}
-                title={`Leave ${chatroom?.name}`}
-                message={`Are you sure you want to leave "${chatroom?.name}"? You can always join back later.`}
-                confirmText="Leave"
-                cancelText="Cancel"
-                confirmButtonClass="bg-red-500 hover:bg-red-600"
-                isLoading={leavingInProgress}
-            />
 
             {/* Message Area - now with ref for scroll tracking */}
             <div
@@ -370,56 +453,72 @@ export default function Chatroom({
                             <div
                                 key={message.id}
                                 className={`flex items-start ${
-                                    message.user_id === user?.id
+                                    message.system
+                                        ? "justify-center"
+                                        : message.user_id === user?.id
                                         ? "justify-end"
                                         : ""
                                 }`}
                             >
-                                {message.user_id !== user?.id && (
-                                    <div className="h-8 w-8 rounded-full bg-indigo-400 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                                        {message.user?.profile_picture ? (
-                                            <img
-                                                src={`/storage/${message.user.profile_picture}`}
-                                                alt={message.user.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            message.user?.name?.charAt(0) || "?"
-                                        )}
+                                {/* System message */}
+                                {message.system ? (
+                                    <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500">
+                                        {message.message}
                                     </div>
-                                )}
-
-                                <div
-                                    className={`mx-3 p-3 rounded-lg shadow-sm ${
-                                        message.user_id === user?.id
-                                            ? "bg-indigo-100"
-                                            : "bg-white"
-                                    }`}
-                                >
-                                    {message.user_id !== user?.id && (
-                                        <p className="text-xs text-gray-500 mb-1">
-                                            {message.user?.name || "Unknown"}
-                                        </p>
-                                    )}
-                                    <p>{message.message}</p>
-                                    <p className="text-xs text-gray-500 text-right mt-1">
-                                        {formatTime(message.sent_at)}
-                                        {message.edited_at && " (edited)"}
-                                    </p>
-                                </div>
-
-                                {message.user_id === user?.id && (
-                                    <div className="h-8 w-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
-                                        {user?.profile_picture ? (
-                                            <img
-                                                src={`/storage/${user.profile_picture}`}
-                                                alt={user.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            user?.name?.charAt(0) || "?"
+                                ) : (
+                                    <>
+                                        {message.user_id !== user?.id && (
+                                            <div className="h-8 w-8 rounded-full bg-indigo-400 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
+                                                {message.user
+                                                    ?.profile_picture ? (
+                                                    <img
+                                                        src={`/storage/${message.user.profile_picture}`}
+                                                        alt={message.user.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    message.user?.name?.charAt(
+                                                        0
+                                                    ) || "?"
+                                                )}
+                                            </div>
                                         )}
-                                    </div>
+
+                                        <div
+                                            className={`mx-3 p-3 rounded-lg shadow-sm ${
+                                                message.user_id === user?.id
+                                                    ? "bg-indigo-100"
+                                                    : "bg-white"
+                                            }`}
+                                        >
+                                            {message.user_id !== user?.id && (
+                                                <p className="text-xs text-gray-500 mb-1">
+                                                    {message.user?.name ||
+                                                        "Unknown"}
+                                                </p>
+                                            )}
+                                            <p>{message.message}</p>
+                                            <p className="text-xs text-gray-500 text-right mt-1">
+                                                {formatTime(message.sent_at)}
+                                                {message.edited_at &&
+                                                    " (edited)"}
+                                            </p>
+                                        </div>
+
+                                        {message.user_id === user?.id && (
+                                            <div className="h-8 w-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden">
+                                                {user?.profile_picture ? (
+                                                    <img
+                                                        src={`/storage/${user.profile_picture}`}
+                                                        alt={user.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    user?.name?.charAt(0) || "?"
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         ))}

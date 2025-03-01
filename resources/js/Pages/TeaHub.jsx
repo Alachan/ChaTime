@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Sidebar from "@/Components/Layout/Sidebar";
 import MainPlayground from "@/Components/Layout/MainPlayground";
 import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
 import ProfileModal from "@/Components/Modals/ProfileModal";
+import { toast } from "react-hot-toast";
 
 export default function TeaHub() {
     const [chatrooms, setChatrooms] = useState([]);
@@ -77,11 +78,63 @@ export default function TeaHub() {
         }
     };
 
+    // Set up Echo listeners for global updates
+    useEffect(() => {
+        if (!window.Echo || !currentUser) return;
+
+        // Set up a channel to listen for general updates
+        const channel = window.Echo.private(`user.${currentUser.id}`);
+
+        // Listen for personal user notifications
+        channel.listen("PersonalNotification", (e) => {
+            console.log("User notification received:", e);
+
+            // Show a toast notification based on the type
+            toast(e.message, {
+                icon: getNotificationIcon(e.type),
+                duration: 3000,
+            });
+        });
+
+        // Cleanup function
+        return () => {
+            channel.stopListening("PersonalNotification");
+        };
+    }, [currentUser]);
+
+    // Helper function to get icon for different notification types
+    const getNotificationIcon = (type) => {
+        switch (type) {
+            case "success":
+                return "✅";
+            case "error":
+                return "❌";
+            case "warning":
+                return "⚠️";
+            case "info":
+                return "ℹ️";
+            default:
+                return "📢";
+        }
+    };
+
     // Fetch on component mount
     useEffect(() => {
         fetchUserData();
         fetchChatrooms();
-    }, []);
+
+        // Set up periodic refresh (every 30 seconds)
+        const timer = setInterval(() => {
+            if (!selectedChatroom) {
+                // Only auto-refresh when not in a chatroom
+                fetchChatrooms();
+            }
+        }, 30000);
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, [selectedChatroom]);
 
     // Function to close sidebar
     const closeSidebar = () => {
@@ -117,15 +170,15 @@ export default function TeaHub() {
         );
         if (selectedRoom) {
             // Create a copy with updated member count
-            const updatedRoom = {
-                ...selectedRoom,
-                member_count: selectedRoom.member_count + 1,
-            };
-            setSelectedChatroom(updatedRoom);
+            // const updatedRoom = {
+            //     ...selectedRoom,
+            //     member_count: selectedRoom.member_count + 1,
+            // };
+            setSelectedChatroom(selectedRoom);
 
             // Add to joined chatrooms if not already there
             if (!chatrooms.some((room) => room.id === chatroomId)) {
-                setChatrooms([...chatrooms, updatedRoom]);
+                setChatrooms([...chatrooms, selectedRoom]);
             }
         }
     };
