@@ -198,6 +198,9 @@ export default function useChatRoom(chatroom, user) {
             console.log("User joined event received:", e);
             setMemberCount(e.member_count);
 
+            // Refresh the entire members cache when a new user joins
+            loadChatroomMembers(chatroom.id);
+
             // Show join notification
             const joinMessage = {
                 id: `join-${Date.now()}`,
@@ -238,7 +241,23 @@ export default function useChatRoom(chatroom, user) {
             // Enhance with user data from cache
             const enrichedMessage = enrichMessageWithUserData(newMessage);
 
-            setMessages((prev) => [...prev, enrichedMessage]);
+            // If we got Unknown User, refresh members cache and try again
+            if (
+                enrichedMessage.user &&
+                !enrichedMessage.user.name &&
+                !enrichedMessage.user.username
+            ) {
+                // This is a missing user - refresh the cache
+                loadChatroomMembers(chatroom.id).then(() => {
+                    // Try enriching again with updated cache
+                    const reEnrichedMessage =
+                        enrichMessageWithUserData(newMessage);
+                    setMessages((prev) => [...prev, reEnrichedMessage]);
+                });
+            } else {
+                // User was in cache, add message normally
+                setMessages((prev) => [...prev, enrichedMessage]);
+            }
         });
 
         // Listen for typing

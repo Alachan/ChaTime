@@ -19,14 +19,6 @@ class UserController extends Controller
         ]);
     }
 
-    public function getBasicInfo($id)
-    {
-        $user = User::select('id', 'name', 'username', 'profile_picture')
-            ->findOrFail($id);
-
-        return response()->json($user);
-    }
-
     /**
      * Update the authenticated user's profile.
      */

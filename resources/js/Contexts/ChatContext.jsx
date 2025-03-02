@@ -12,54 +12,50 @@ export function ChatProvider({ children, currentUser }) {
     // Global state for user cache that persists across chatroom changes
     const [userCache, setUserCache] = useState({});
 
-    // Initialize user cache with current user
-    useEffect(() => {
-        if (currentUser) {
-            setUserCache((cache) => ({
-                ...cache,
-                [currentUser.id]: currentUser,
-            }));
-        }
-    }, [currentUser]);
-
     /**
-     * Add a user to the cache
+     * Ensure we have data for all participants in a chatroom
      *
-     * @param {Object} user - The user object to add to cache
+     * @param {number} chatroomId - The ID of the chatroom
      */
-    const addUserToCache = (user) => {
-        if (user && user.id) {
-            setUserCache((cache) => ({
-                ...cache,
-                [user.id]: user,
-            }));
-        }
-    };
-
-    /**
-     * Get a user from the cache, fetching from API if not found
-     *
-     * @param {number} userId - The ID of the user to get
-     * @returns {Promise} - Resolves with the user object
-     */
-    const getUserData = async (userId) => {
-        // If user is in cache, return it
-        if (userCache[userId]) {
-            return userCache[userId];
-        }
-
-        // Otherwise fetch from API
+    const loadChatroomMembers = async (chatroomId) => {
         try {
-            const response = await ChatService.getUserBasicInfo(userId);
-            const userData = response.data;
+            const response = await ChatService.getChatroomMembers(chatroomId);
+            const members = response.data;
 
-            // Add to cache
-            addUserToCache(userData);
+            setUserCache((prevCache) => {
+                // Create a new cache object with all previous entries
+                const updatedCache = { ...prevCache };
 
-            return userData;
+                // Only add members that aren't in the cache or need updating
+                members.forEach((member) => {
+                    if (!member || !member.id) return;
+
+                    const existingMember = updatedCache[member.id];
+
+                    // Add if not in cache, or update if something changed
+                    if (
+                        !existingMember ||
+                        existingMember.name !== member.name ||
+                        existingMember.username !== member.username ||
+                        existingMember.profile_picture !==
+                            member.profile_picture
+                    ) {
+                        updatedCache[member.id] = member;
+                    }
+                });
+
+                // Ensure current user has latest data
+                if (currentUser && currentUser.id) {
+                    updatedCache[currentUser.id] = currentUser;
+                }
+
+                return updatedCache;
+            });
+
+            return members;
         } catch (error) {
-            console.error(`Error fetching user data for ID ${userId}:`, error);
-            return null;
+            console.error("Error loading chatroom members:", error);
+            return [];
         }
     };
 
@@ -86,33 +82,9 @@ export function ChatProvider({ children, currentUser }) {
         };
     };
 
-    /**
-     * Ensure we have data for all participants in a chatroom
-     *
-     * @param {number} chatroomId - The ID of the chatroom
-     */
-    const loadChatroomMembers = async (chatroomId) => {
-        try {
-            const response = await ChatService.getChatroomMembers(chatroomId);
-            const members = response.data;
-
-            // Add all participants to cache
-            members.forEach((member) => {
-                addUserToCache(member);
-            });
-
-            return participants;
-        } catch (error) {
-            console.error("Error loading chatroom members:", error);
-            return [];
-        }
-    };
-
     // Context value to be provided
     const contextValue = {
         userCache,
-        getUserData,
-        addUserToCache,
         enrichMessageWithUserData,
         loadChatroomMembers,
     };

@@ -23,7 +23,7 @@ class ChatRoomController extends Controller
         }
 
         $members = $chatRoom->participants()
-            ->select('id', 'name', 'username', 'profile_picture')
+            ->select('users.id', 'users.name', 'users.username', 'users.profile_picture')
             ->get();
 
         return response()->json($members);
