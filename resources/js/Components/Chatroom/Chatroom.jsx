@@ -3,8 +3,8 @@ import useChatRoom from "@/Hooks/useChatRoom";
 import ConfirmationModal from "../Modals/ConfirmationModal";
 import ChatroomHeader from "./ChatroomHeader";
 import ChatroomNavigation from "./ChatroomNavigation";
-import MessageArea from "./MessageArea";
-import MessageInput from "./MessageInput";
+import MessageArea from "./Message/MessageArea";
+import MessageInput from "./Message/MessageInput";
 import ChatService from "@/Services/ChatService";
 import axios from "axios";
 

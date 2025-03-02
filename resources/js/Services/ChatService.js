@@ -5,6 +5,49 @@ import axios from "axios";
  */
 export default {
     /**
+     * Create a chatroom
+     *
+     * @param {Object} formData - The form data containing chatroom details
+     * @param {string} formData.name - The name of the chatroom
+     * @param {string} formData.description - The description of the chatroom
+     * @param {string|null} [formData.password=null] - The password for the chatroom (optional)
+     * @returns {Promise} - API response
+     */
+    createChatroom({ name, description, password = null }) {
+        return axios.post("/api/create-chatroom", {
+            name,
+            description,
+            password,
+        });
+    },
+
+    /**
+     * Join a chatroom
+     *
+     * @param {number} chatRoomId - The ID of the chatroom
+     * @param {string|null} [password=null] - The password for the chatroom
+     * @returns {Promise} - API response
+     */
+    joinChatroom(chatRoomId, password = null) {
+        return axios.post("/api/join-chatroom", {
+            chat_room_id: chatRoomId,
+            password: password,
+        });
+    },
+
+    /**
+     * Leave a chatroom
+     *
+     * @param {number} chatRoomId - The ID of the chatroom
+     * @returns {Promise} - API response
+     */
+    leaveChatroom(chatRoomId) {
+        return axios.post("/api/leave-chatroom", {
+            chat_room_id: chatRoomId,
+        });
+    },
+
+    /**
      * Get messages for a specific chatroom
      *
      * @param {number} chatRoomId - The ID of the chatroom
@@ -37,18 +80,6 @@ export default {
      */
     sendTypingEvent(chatRoomId) {
         return axios.post("/api/user-typing", {
-            chat_room_id: chatRoomId,
-        });
-    },
-
-    /**
-     * Leave a chatroom
-     *
-     * @param {number} chatRoomId - The ID of the chatroom
-     * @returns {Promise} - API response
-     */
-    leaveChatroom(chatRoomId) {
-        return axios.post("/api/leave-chatroom", {
             chat_room_id: chatRoomId,
         });
     },
