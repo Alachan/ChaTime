@@ -27,6 +27,9 @@ export default function MessageBubble({ message, currentUser }) {
     const handleRightClick = (e) => {
         if (isMyMessage) {
             e.preventDefault(); // Prevent default browser context menu
+
+            // Use the position of the right-click within the message bubble
+            // The target is now the bubble itself
             setContextMenu({
                 x: e.clientX,
                 y: e.clientY,
@@ -36,12 +39,19 @@ export default function MessageBubble({ message, currentUser }) {
 
     // Function to handle long-press (mobile)
     const handleLongPress = (e) => {
-        if (isMyMessage) {
-            // Get position for context menu
-            const rect = messageRef.current.getBoundingClientRect();
+        if (isMyMessage && messageRef.current) {
+            // Double-check that e.currentTarget is still valid
+            const target = e.currentTarget;
+            if (!target) return;
+
+            const rect = target.getBoundingClientRect();
+            // For mobile, position relative to the message bubble (centered horizontally if possible)
+            const centerX = rect.left + rect.width / 2;
+
+            // Position menu near the message bubble, centered if possible
             setContextMenu({
-                x: Math.min(rect.left, window.innerWidth - 180), // Keep menu on screen
-                y: rect.top,
+                x: centerX - 80, // Try to center the menu (width ~160px)
+                y: rect.top + 40, // Position below the message
             });
         }
     };
@@ -175,8 +185,6 @@ function renderUserMessage(
                 className={`flex items-start ${
                     isMyMessage ? "justify-end" : "justify-start"
                 } relative`}
-                onContextMenu={handleRightClick}
-                {...longPressEvent}
             >
                 {/* Only show other user's avatar on the left */}
                 {!isMyMessage && (
@@ -193,11 +201,13 @@ function renderUserMessage(
                     </div>
                 )}
 
-                {/* Message content */}
+                {/* Message content - context menu only triggers on this element */}
                 <div
                     className={`mx-3 p-3 rounded-lg shadow-sm ${
                         isMyMessage ? "bg-indigo-100" : "bg-white"
                     }`}
+                    onContextMenu={isMyMessage ? handleRightClick : undefined}
+                    {...(isMyMessage ? longPressEvent : {})}
                 >
                     {/* Only show name for other users' messages */}
                     {!isMyMessage && (
@@ -233,17 +243,17 @@ function renderUserMessage(
                         )}
                     </div>
                 )}
-
-                {/* Context menu for the message (positioned absolutely) */}
-                <MessageContextMenu
-                    position={contextMenu}
-                    onClose={closeContextMenu}
-                    onDelete={confirmDelete}
-                    onEdit={handleEditMessage}
-                    canEdit={isMyMessage}
-                    canDelete={isMyMessage}
-                />
             </div>
+
+            {/* Context menu for the message (positioned fixed to avoid scroll issues) */}
+            <MessageContextMenu
+                position={contextMenu}
+                onClose={closeContextMenu}
+                onDelete={confirmDelete}
+                onEdit={handleEditMessage}
+                canEdit={isMyMessage}
+                canDelete={isMyMessage}
+            />
 
             {/* Confirmation Modal for Delete */}
             <ConfirmationModal

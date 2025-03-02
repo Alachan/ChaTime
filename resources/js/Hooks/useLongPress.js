@@ -1,80 +1,77 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 /**
- * Custom hook to detect long press events (for mobile interactions)
- * @param {Function} onLongPress - Callback to trigger when long press is detected
- * @param {Function} onClick - Optional regular click callback
- * @param {number} duration - Duration in ms to detect a long press (default: 500ms)
+ * Custom hook to detect long press events (for mobile support)
+ *
+ * @param {Function} onLongPress - Callback to execute on long press
+ * @param {number} threshold - Time in ms to consider a press as "long"
+ * @returns {Object} - Event handlers to bind to the target element
  */
-export default function useLongPress(
-    onLongPress,
-    onClick = null,
-    duration = 500
-) {
-    const [longPressTriggered, setLongPressTriggered] = useState(false);
-    const timeout = useRef();
-    const target = useRef();
+export default function useLongPress(onLongPress, threshold = 500) {
+    // Use a ref to track the timeout ID
+    const timerRef = useRef(null);
+    // Ref to track if the press was a long press
+    const isLongPressRef = useRef(false);
+    // Ref to track the event for position information
+    const eventRef = useRef(null);
 
-    // When user starts pressing
-    const start = useCallback(
-        (event) => {
-            event.persist();
-
-            // Store the target element
-            target.current = event.target;
+    // Handle the start of a press
+    const handleStart = useCallback(
+        (e) => {
+            isLongPressRef.current = false;
+            // Store the event to pass to onLongPress
+            eventRef.current = e;
 
             // Clear any existing timeout
-            if (timeout.current) {
-                clearTimeout(timeout.current);
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
             }
 
-            setLongPressTriggered(false);
-
-            // Set a timeout to trigger long press after the specified duration
-            timeout.current = setTimeout(() => {
-                onLongPress(event);
-                setLongPressTriggered(true);
-            }, duration);
+            // Set a timeout for the long press
+            timerRef.current = setTimeout(() => {
+                isLongPressRef.current = true;
+                // Pass the event so we know which element and where it was pressed
+                onLongPress(eventRef.current);
+            }, threshold);
         },
-        [onLongPress, duration]
+        [onLongPress, threshold]
     );
 
-    // When user stops pressing
-    const clear = useCallback(
-        (event, shouldTriggerClick = true) => {
-            // Make sure we're dealing with the same element
-            if (
-                shouldTriggerClick &&
-                !longPressTriggered &&
-                onClick &&
-                event.target === target.current
-            ) {
-                // Only trigger if it wasn't a long press and we have a click handler
-                onClick(event);
-            }
+    // Handle the end of a press
+    const handleEnd = useCallback(() => {
+        // Clear the timeout
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    }, []);
 
-            // Clear the timeout
-            if (timeout.current) {
-                clearTimeout(timeout.current);
-            }
+    // Handle move events (cancel long press if moved too much)
+    const handleCancel = useCallback(() => {
+        // Clear the timeout
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+        isLongPressRef.current = false;
+    }, []);
 
-            setLongPressTriggered(false);
-        },
-        [onClick, longPressTriggered]
-    );
+    // Handle normal click - prevent triggering click after long press
+    const handleClick = useCallback((e) => {
+        if (isLongPressRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, []);
 
-    // Return event handlers for different events
+    // Return object with event handlers
     return {
-        onMouseDown: start,
-        onTouchStart: start,
-        onMouseUp: clear,
-        onMouseLeave: (e) => clear(e, false), // Don't trigger click when mouse leaves
-        onTouchEnd: clear,
-        onContextMenu: (e) => {
-            // Prevent the context menu on long press
-            if (longPressTriggered) {
-                e.preventDefault();
-            }
-        },
+        onMouseDown: handleStart,
+        onMouseUp: handleEnd,
+        onMouseLeave: handleCancel,
+        onTouchStart: handleStart,
+        onTouchEnd: handleEnd,
+        onTouchCancel: handleCancel,
+        onClick: handleClick,
     };
 }
