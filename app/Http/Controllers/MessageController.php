@@ -169,7 +169,8 @@ class MessageController extends Controller
             if ($request->message_type === Message::TYPE_ADMIN) {
                 $message = SystemMessageService::adminMessage(
                     $request->chat_room_id,
-                    $request->message
+                    $request->message,
+                    $request->Auth::user()
                 );
             } else {
                 $message = SystemMessageService::create(

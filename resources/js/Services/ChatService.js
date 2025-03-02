@@ -73,6 +73,29 @@ export default {
     },
 
     /**
+     * Edit a message
+     *
+     * @param {number} messageId - The ID of the message to edit
+     * @param {string} newMessage - The new message content
+     * @returns {Promise} - API response
+     */
+    editMessage(messageId, newMessage) {
+        return axios.post(`/api/edit-message/${messageId}`, {
+            message: newMessage,
+        });
+    },
+
+    /**
+     * Delete a message
+     *
+     * @param {number} messageId - The ID of the message
+     * @returns {Promise} - API response
+     */
+    deleteMessage(messageId) {
+        return axios.delete(`/api/messages/${messageId}`);
+    },
+
+    /**
      * Send a typing event to a chatroom
      *
      * @param {number} chatRoomId - The ID of the chatroom

@@ -218,17 +218,6 @@ export default function useChatRoom(chatroom, user) {
             console.log("User joined event received:", e);
             setMemberCount(e.member_count);
 
-            // Create different messages based on who joined
-            // const joinMessage = {
-            //     id: `join-${Date.now()}`,
-            //     message: `${e.username} joined the chat`,
-            //     system: true,
-            //     sent_at: new Date().toISOString(),
-            // };
-
-            // setMessages((prev) => [...prev, joinMessage]);
-
-            // Refresh the entire members cache when a new user joins
             loadChatroomMembers(chatroom.id);
         });
 
@@ -236,17 +225,32 @@ export default function useChatRoom(chatroom, user) {
         channel.listen("UserLeftChat", (e) => {
             console.log("User left event received:", e);
             setMemberCount(e.member_count);
-
-            // Show leave notification
-            // const leaveMessage = {
-            //     id: `leave-${Date.now()}`,
-            //     message: `${e.username} left the chat`,
-            //     system: true,
-            //     sent_at: new Date().toISOString(),
-            // };
-            // setMessages((prev) => [...prev, leaveMessage]);
         });
 
+        // Listen for typing
+        channel.listen("UserTyping", (e) => {
+            console.log("User typing:", e);
+
+            // Add user to typing users
+            setTypingUsers((prev) => ({
+                ...prev,
+                [e.user_id]: {
+                    username: e.username,
+                    timestamp: Date.now(),
+                },
+            }));
+
+            // Remove user after 3 seconds of no typing
+            setTimeout(() => {
+                setTypingUsers((prev) => {
+                    const newTyping = { ...prev };
+                    delete newTyping[e.user_id];
+                    return newTyping;
+                });
+            }, 3000);
+        });
+
+        // Listen for new messages
         channel.listen("MessageSent", (e) => {
             console.log("Message received:", e);
 
@@ -285,35 +289,38 @@ export default function useChatRoom(chatroom, user) {
             }
         });
 
-        // Listen for typing
-        channel.listen("UserTyping", (e) => {
-            console.log("User typing:", e);
+        // Listen for message edits
+        channel.listen("MessageEdited", (e) => {
+            console.log("Message edited event:", e);
 
-            // Add user to typing users
-            setTypingUsers((prev) => ({
-                ...prev,
-                [e.user_id]: {
-                    username: e.username,
-                    timestamp: Date.now(),
-                },
-            }));
+            // Update the message in our state
+            setMessages((prevMessages) =>
+                prevMessages.map((msg) =>
+                    msg.id === e.id
+                        ? { ...msg, message: e.message, edited_at: e.edited_at }
+                        : msg
+                )
+            );
+        });
 
-            // Remove user after 3 seconds of no typing
-            setTimeout(() => {
-                setTypingUsers((prev) => {
-                    const newTyping = { ...prev };
-                    delete newTyping[e.user_id];
-                    return newTyping;
-                });
-            }, 3000);
+        // Listen for message deletions
+        channel.listen("MessageDeleted", (e) => {
+            console.log("Message deleted event:", e);
+
+            // Remove the message from our state
+            setMessages((prevMessages) =>
+                prevMessages.filter((msg) => msg.id !== e.id)
+            );
         });
 
         // Cleanup function
         return () => {
             channel.stopListening("UserJoinedChat");
             channel.stopListening("UserLeftChat");
-            channel.stopListening("MessageSent");
             channel.stopListening("UserTyping");
+            channel.stopListening("MessageSent");
+            channel.stopListening("MessageEdited");
+            channel.stopListening("MessageDeleted");
         };
     }, [chatroom?.id, user?.id]);
 
