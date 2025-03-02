@@ -95,10 +95,13 @@ export default function MessageBubble({ message, currentUser }) {
         // For now, just close the menu
     };
 
+    // Get the user from message.user or use a placeholder
+    const bubbleUser = isMyMessage ? currentUser : message.user;
+
     // Otherwise, render a regular user message
     return renderUserMessage(
         message,
-        currentUser,
+        bubbleUser,
         isMyMessage,
         messageRef,
         longPressEvent,
@@ -154,7 +157,7 @@ function renderSystemMessage(message) {
  */
 function renderUserMessage(
     message,
-    currentUser,
+    bubbleUser,
     isMyMessage,
     messageRef,
     longPressEvent,
@@ -168,9 +171,6 @@ function renderUserMessage(
     handleDeleteMessage,
     isDeleting
 ) {
-    // Get the appropriate user data (either message sender or current user)
-    const bubbleUser = isMyMessage ? currentUser : message.user;
-
     // Create a fallback display name for when user data is missing
     const displayName =
         bubbleUser?.name || bubbleUser?.username || "Unknown User";

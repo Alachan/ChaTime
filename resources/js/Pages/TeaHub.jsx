@@ -5,7 +5,6 @@ import Sidebar from "@/Components/Layout/Sidebar";
 import MainPlayground from "@/Components/Layout/MainPlayground";
 import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
 import ProfileModal from "@/Components/Modals/ProfileModal";
-import { ChatProvider } from "@/Contexts/ChatContext";
 import toast, { Toaster } from "react-hot-toast";
 import { getNotificationIcon } from "@/Utils/formatter";
 
@@ -160,69 +159,67 @@ export default function TeaHub() {
     };
 
     return (
-        <ChatProvider currentUser={currentUser}>
-            <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-                <Toaster
-                    position="top-center"
-                    reverseOrder={false}
-                    toastOptions={{
-                        style: {
-                            background: "rgba(255, 255, 255, 0.1)",
-                            backdropFilter: "blur(10px)",
-                            color: "#4a4e69",
-                            borderRadius: "12px",
-                            border: "1px solid rgba(255, 255, 255, 0.2)",
-                            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                            maxWidth: "350px", // Prevents overly wide toasts
-                            width: "auto", // Adapts width dynamically
-                            minWidth: "150px", // Avoids shrinking too much
-                            textAlign: "left", // Keeps text aligned naturally
-                            padding: "12px 0px 12px 33px", // Keeps spacing balanced
-                            fontSize: "16px",
-                            fontWeight: "500",
-                        },
-                    }}
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+            <Toaster
+                position="top-center"
+                reverseOrder={false}
+                toastOptions={{
+                    style: {
+                        background: "rgba(255, 255, 255, 0.1)",
+                        backdropFilter: "blur(10px)",
+                        color: "#4a4e69",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+                        maxWidth: "350px", // Prevents overly wide toasts
+                        width: "auto", // Adapts width dynamically
+                        minWidth: "150px", // Avoids shrinking too much
+                        textAlign: "left", // Keeps text aligned naturally
+                        padding: "12px 0px 12px 33px", // Keeps spacing balanced
+                        fontSize: "16px",
+                        fontWeight: "500",
+                    },
+                }}
+            />
+            <Sidebar
+                chatrooms={joinedChatrooms}
+                onCreateChatroom={handleCreateChatroom}
+                onEditProfile={handleEditProfile}
+                onClickChatroom={handleJoinOrEnterChatroom}
+                user={currentUser}
+                sidebarControl={{
+                    isOpen: sidebarOpen,
+                    toggle: () => setSidebarOpen(!sidebarOpen),
+                    close: () => setSidebarOpen(false),
+                }}
+            />
+            <main className="flex-1">
+                <MainPlayground
+                    allChatrooms={allChatrooms}
+                    joinedChatrooms={joinedChatrooms}
+                    onJoinChatroom={handleJoinOrEnterChatroom}
+                    onLeaveChatroom={handleLeaveChatroom}
+                    onEnterChatroom={handleJoinOrEnterChatroom}
+                    selectedChatroom={selectedChatroom}
+                    currentUser={currentUser}
+                    handleBackToPlayground={handleBackToPlayground}
                 />
-                <Sidebar
-                    chatrooms={joinedChatrooms}
-                    onCreateChatroom={handleCreateChatroom}
-                    onEditProfile={handleEditProfile}
-                    onClickChatroom={handleJoinOrEnterChatroom}
-                    user={currentUser}
-                    sidebarControl={{
-                        isOpen: sidebarOpen,
-                        toggle: () => setSidebarOpen(!sidebarOpen),
-                        close: () => setSidebarOpen(false),
-                    }}
-                />
-                <main className="flex-1">
-                    <MainPlayground
-                        allChatrooms={allChatrooms}
-                        joinedChatrooms={joinedChatrooms}
-                        onJoinChatroom={handleJoinOrEnterChatroom}
-                        onLeaveChatroom={handleLeaveChatroom}
-                        onEnterChatroom={handleJoinOrEnterChatroom}
-                        selectedChatroom={selectedChatroom}
-                        currentUser={currentUser}
-                        handleBackToPlayground={handleBackToPlayground}
-                    />
-                </main>
+            </main>
 
-                {/* Profile Modal */}
-                <ProfileModal
-                    isOpen={profileModalOpen}
-                    onClose={() => setProfileModalOpen(false)}
-                    user={currentUser}
-                    onProfileUpdate={handleProfileUpdate}
-                />
+            {/* Profile Modal */}
+            <ProfileModal
+                isOpen={profileModalOpen}
+                onClose={() => setProfileModalOpen(false)}
+                user={currentUser}
+                onProfileUpdate={handleProfileUpdate}
+            />
 
-                {/* Create Chatroom Modal */}
-                <CreateChatroomModal
-                    isOpen={createModalOpen}
-                    onClose={() => setCreateModalOpen(false)}
-                    onChatroomCreated={handleChatroomCreated}
-                />
-            </div>
-        </ChatProvider>
+            {/* Create Chatroom Modal */}
+            <CreateChatroomModal
+                isOpen={createModalOpen}
+                onClose={() => setCreateModalOpen(false)}
+                onChatroomCreated={handleChatroomCreated}
+            />
+        </div>
     );
 }

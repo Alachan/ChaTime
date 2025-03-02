@@ -17,9 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Chatroom resource routes
     Route::get('/chatrooms', [ChatRoomController::class, 'getAllChatRooms']);
-    Route::post('/chatrooms', [ChatRoomController::class, 'createChatRoom']);
     Route::get('/chatrooms/joined', [ChatRoomController::class, 'getJoinedChatRooms']);
-    Route::get('/chatrooms/{roomId}/members', [ChatRoomController::class, 'getMembers']);
+    Route::post('/chatrooms', [ChatRoomController::class, 'createChatRoom']);
     // Membership actions as separate endpoints
     Route::post('/chatrooms/join', [ChatRoomController::class, 'joinChatRoom']);
     Route::post('/chatrooms/leave', [ChatRoomController::class, 'leaveChatRoom']);
@@ -29,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Message related routes
     Route::get('/messages/{chatRoomId}', [MessageController::class, 'getMessages']);
     Route::post('/messages', [MessageController::class, 'sendMessage']);
-    Route::post('/messagese/{id}', [MessageController::class, 'editMessage']);
+    Route::post('/messages/{id}', [MessageController::class, 'editMessage']);
     Route::delete('/messages/{id}', [MessageController::class, 'deleteMessage']);
     // System message route
     Route::post('/messages/system', [MessageController::class, 'sendSystemMessage']);

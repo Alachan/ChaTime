@@ -1,19 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { useChatContext } from "@/Contexts/ChatContext";
 import ChatService from "@/Services/ChatService";
 import { formatTypingIndicator } from "@/Utils/formatter";
 
 /**
- * A custom useChatRoom hook that uses the ChatContext
+ * A custom useChatRoom hook for chatroom functionality
  *
  * @param {Object} chatroom - The chatroom object
  * @param {Object} user - The current user
  * @returns {Object} - Chat state and functions
  */
 export default function useChatRoom(chatroom, user) {
-    // Get chat context functions
-    const { enrichMessageWithUserData, loadChatroomMembers } = useChatContext();
-
     // States for pagination
     const [messages, setMessages] = useState([]);
     const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -47,27 +43,6 @@ export default function useChatRoom(chatroom, user) {
 
             // Load messages
             fetchMessages();
-
-            // // Store the first_join flag in a variable
-            // const firstJoin = chatroom.first_join;
-
-            // // First load the messages
-            // fetchMessages().then(() => {
-            //     // After messages are loaded, add the welcome message if this is first join
-            //     if (firstJoin) {
-            //         // Add a welcome message
-            //         const welcomeMessage = {
-            //             id: `welcome-${Date.now()}`,
-            //             message: `Welcome to ${chatroom.name}! Enjoy the new tea!`,
-            //             system: true,
-            //             sent_at: new Date().toISOString(),
-            //         };
-
-            //         setMessages((prev) => [...prev, welcomeMessage]);
-            //     }
-            // });
-            // Load participants into cache
-            loadChatroomMembers(chatroom.id);
         }
     }, [chatroom?.id]);
 
@@ -82,12 +57,8 @@ export default function useChatRoom(chatroom, user) {
 
             const data = response.data;
 
-            // Enrich messages with user data
-            const enrichedMessages = (data.messages || []).map((message) =>
-                enrichMessageWithUserData(message)
-            );
-
-            setMessages(enrichedMessages || []);
+            // Use messages directly from API
+            setMessages(data.messages || []);
             setHasMoreMessages(data.has_more || false);
             setOldestMessageId(data.oldest_id);
         } catch (error) {
@@ -110,13 +81,9 @@ export default function useChatRoom(chatroom, user) {
             });
 
             const data = response.data;
-            // Enrich messages with user data
-            const enrichedMessages = (data.messages || []).map((message) =>
-                enrichMessageWithUserData(message)
-            );
 
             setMessages((prevMessages) => [
-                ...enrichedMessages,
+                ...(data.messages || []),
                 ...prevMessages,
             ]);
             setHasMoreMessages(data.has_more || false);
@@ -154,10 +121,11 @@ export default function useChatRoom(chatroom, user) {
             );
 
             // Add the new message to the local state
-            const newMessage = enrichMessageWithUserData({
+            const newMessage = {
                 ...response.data,
-                user_id: user.id, // Ensure user_id is set
-            });
+                // Add the current user for display convenience
+                user: user,
+            };
 
             setMessages((prevMessages) => [...prevMessages, newMessage]);
             setInputMessage("");
@@ -217,8 +185,6 @@ export default function useChatRoom(chatroom, user) {
         channel.listen("UserJoinedChat", (e) => {
             console.log("User joined event received:", e);
             setMemberCount(e.member_count);
-
-            loadChatroomMembers(chatroom.id);
         });
 
         // Listen for user left event
@@ -261,32 +227,15 @@ export default function useChatRoom(chatroom, user) {
                 message: e.message,
                 message_type: e.message_type,
                 sent_at: e.sent_at,
+                user: e.user,
             };
 
-            // Enhance with user data from cache (for user messages)
-            const enrichedMessage =
-                e.message_type === "user"
-                    ? enrichMessageWithUserData(newMessage)
-                    : newMessage; // For system messages, no need to enrich
+            // Just add the message directly
+            setMessages((prev) => [...prev, newMessage]);
 
-            // If we got Unknown User for a user message, refresh members cache and try again
-            if (
-                e.message_type === "user" &&
-                enrichedMessage.user &&
-                !enrichedMessage.user.name &&
-                !enrichedMessage.user.username
-            ) {
-                // This is a missing user - refresh the cache
-                loadChatroomMembers(chatroom.id).then(() => {
-                    // Try enriching again with updated cache
-                    const reEnrichedMessage =
-                        enrichMessageWithUserData(newMessage);
-                    setMessages((prev) => [...prev, reEnrichedMessage]);
-                });
-            } else {
-                // User was in cache, add message normally
-                setMessages((prev) => [...prev, enrichedMessage]);
-            }
+            // If we need to do a separate API call to get more user info
+            // we could do it here, but it's simpler to rely on the API
+            // to include all necessary user data with messages
         });
 
         // Listen for message edits

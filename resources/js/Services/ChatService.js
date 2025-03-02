@@ -23,16 +23,6 @@ export default {
     },
 
     /**
-     * Get all members in a chatroom
-     *
-     * @param {number} chatRoomId - The ID of the chatroom
-     * @returns {Promise} - API response
-     */
-    getChatroomMembers(chatRoomId) {
-        return axios.get(`/api/chatrooms/${chatRoomId}/members`);
-    },
-
-    /**
      * Create a chatroom
      *
      * @param {Object} formData - The form data containing chatroom details
