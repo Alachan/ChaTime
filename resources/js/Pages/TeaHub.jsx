@@ -9,8 +9,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { getNotificationIcon } from "@/Utils/formatter";
 
 export default function TeaHub() {
-    const [chatrooms, setChatrooms] = useState([]);
-    const [publicChatrooms, setPublicChatrooms] = useState([]);
+    const [joinedChatrooms, setJoinedChatrooms] = useState([]);
+    const [allChatrooms, setAllChatrooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedChatroom, setSelectedChatroom] = useState(null);
     const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -30,51 +30,20 @@ export default function TeaHub() {
         }
     };
 
-    // Fetch user's joined chatrooms and public chatrooms on component mount
+    // Fetch user's joined chatrooms and all chatrooms on component mount
     const fetchChatrooms = async () => {
         setLoading(true);
         try {
             // Use our actual API endpoints
             const [joinedResponse, publicResponse] = await Promise.all([
                 axios.get("/api/chatrooms/joined"),
-                axios.get("/api/chatrooms/public"),
+                axios.get("/api/chatrooms/all"),
             ]);
 
-            setChatrooms(joinedResponse.data || []);
-            setPublicChatrooms(publicResponse.data || []);
+            setJoinedChatrooms(joinedResponse.data || []);
+            setAllChatrooms(publicResponse.data || []);
         } catch (error) {
             console.error("Failed to fetch chatrooms:", error);
-
-            // Only use fallback data if we have no real data yet
-            if (chatrooms.length === 0) {
-                setChatrooms([
-                    { id: 1, name: "Tech Talk", lastActivity: new Date() },
-                    { id: 2, name: "Gaming Hub", lastActivity: new Date() },
-                ]);
-            }
-
-            if (publicChatrooms.length === 0) {
-                setPublicChatrooms([
-                    {
-                        id: 3,
-                        name: "Anime Lovers",
-                        description: "Chat about your favorite anime!",
-                        member_count: 42,
-                    },
-                    {
-                        id: 4,
-                        name: "Sports Fans",
-                        description: "Talk about sports news.",
-                        member_count: 56,
-                    },
-                    {
-                        id: 5,
-                        name: "Music Appreciation",
-                        description: "Share and discuss your favorite tunes",
-                        member_count: 38,
-                    },
-                ]);
-            }
         } finally {
             setLoading(false);
         }
@@ -144,36 +113,44 @@ export default function TeaHub() {
 
     const handleChatroomCreated = (newChatroom) => {
         // Add the new chatroom to the list
-        setChatrooms((prevChatrooms) => [...prevChatrooms, newChatroom]);
+        setJoinedChatrooms((prevChatrooms) => [...prevChatrooms, newChatroom]);
+
+        const created = {
+            ...newChatroom,
+            first_join: true,
+        };
 
         // Automatically select and enter the new chatroom
-        setSelectedChatroom(newChatroom);
+        setSelectedChatroom(created);
     };
 
-    const handleJoinChatroom = (chatroomId) => {
-        const selectedRoom = publicChatrooms.find(
+    const handleJoinOrEnterChatroom = (chatroomId) => {
+        const selected = allChatrooms.find((room) => room.id === chatroomId);
+
+        const alreadyJoined = joinedChatrooms.some(
             (room) => room.id === chatroomId
         );
-        if (selectedRoom) {
-            // Create a copy with updated member count
-            // const updatedRoom = {
-            //     ...selectedRoom,
-            //     member_count: selectedRoom.member_count + 1,
-            // };
-            setSelectedChatroom(selectedRoom);
 
-            // Add to joined chatrooms if not already there
-            if (!chatrooms.some((room) => room.id === chatroomId)) {
-                setChatrooms([...chatrooms, selectedRoom]);
-            }
+        if (alreadyJoined) {
+            setSelectedChatroom(selected);
+        } else {
+            // Create a copy with updated member count
+            const updatedRoom = {
+                ...selected,
+                member_count: selected.member_count + 1,
+                first_join: true,
+            };
+
+            setJoinedChatrooms([...joinedChatrooms, updatedRoom]);
+            setSelectedChatroom(updatedRoom);
         }
     };
 
-    const handleEnterChatroom = (chatroomId) => {
-        const selectedRoom = chatrooms.find((r) => r.id === chatroomId);
-        if (selectedRoom) {
-            setSelectedChatroom(selectedRoom);
-        }
+    const handleLeaveChatroom = (chatroomId) => {
+        setJoinedChatrooms(
+            joinedChatrooms.filter((room) => room.id !== chatroomId)
+        );
+        setSelectedChatroom(null);
     };
 
     const handleBackToPlayground = () => {
@@ -206,10 +183,10 @@ export default function TeaHub() {
                     }}
                 />
                 <Sidebar
-                    chatrooms={chatrooms}
+                    chatrooms={joinedChatrooms}
                     onCreateChatroom={handleCreateChatroom}
                     onEditProfile={handleEditProfile}
-                    onClickChatroom={handleEnterChatroom}
+                    onClickChatroom={handleJoinOrEnterChatroom}
                     user={currentUser}
                     sidebarControl={{
                         isOpen: sidebarOpen,
@@ -219,10 +196,11 @@ export default function TeaHub() {
                 />
                 <main className="flex-1">
                     <MainPlayground
-                        publicChatrooms={publicChatrooms}
-                        joinedChatrooms={chatrooms}
-                        onJoinChatroom={handleJoinChatroom}
-                        onEnterChatroom={handleEnterChatroom}
+                        allChatrooms={allChatrooms}
+                        joinedChatrooms={joinedChatrooms}
+                        onJoinChatroom={handleJoinOrEnterChatroom}
+                        onLeaveChatroom={handleLeaveChatroom}
+                        onEnterChatroom={handleJoinOrEnterChatroom}
                         selectedChatroom={selectedChatroom}
                         currentUser={currentUser}
                         handleBackToPlayground={handleBackToPlayground}

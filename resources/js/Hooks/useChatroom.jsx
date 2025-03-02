@@ -45,7 +45,24 @@ export default function useChatRoom(chatroom, user) {
             setLoading(true);
             shouldScrollToBottom.current = true;
 
-            fetchMessages();
+            // Store the first_join flag in a variable
+            const firstJoin = chatroom.first_join;
+
+            // First load the messages
+            fetchMessages().then(() => {
+                // After messages are loaded, add the welcome message if this is first join
+                if (firstJoin) {
+                    // Add a welcome message
+                    const welcomeMessage = {
+                        id: `welcome-${Date.now()}`,
+                        message: `Welcome to ${chatroom.name}! Enjoy the new tea!`,
+                        system: true,
+                        sent_at: new Date().toISOString(),
+                    };
+
+                    setMessages((prev) => [...prev, welcomeMessage]);
+                }
+            });
             // Load participants into cache
             loadChatroomMembers(chatroom.id);
         }
@@ -198,31 +215,13 @@ export default function useChatRoom(chatroom, user) {
             console.log("User joined event received:", e);
             setMemberCount(e.member_count);
 
-            // Determine if the joining user is the current user
-            const isCurrentUser = e.user_id === user.id;
-
-            console.log(isCurrentUser);
-
             // Create different messages based on who joined
-            let joinMessage;
-
-            if (isCurrentUser) {
-                // Welcome message for the current user
-                joinMessage = {
-                    id: `join-${Date.now()}`,
-                    message: `Welcome to the chat! You've joined ${chatroom.name}`,
-                    system: true,
-                    sent_at: new Date().toISOString(),
-                };
-            } else {
-                // Join notification for other users
-                joinMessage = {
-                    id: `join-${Date.now()}`,
-                    message: `${e.username} joined the chat`,
-                    system: true,
-                    sent_at: new Date().toISOString(),
-                };
-            }
+            const joinMessage = {
+                id: `join-${Date.now()}`,
+                message: `${e.username} joined the chat`,
+                system: true,
+                sent_at: new Date().toISOString(),
+            };
 
             setMessages((prev) => [...prev, joinMessage]);
 

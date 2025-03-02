@@ -5,10 +5,11 @@ import ChatroomCard from "../Chatroom/ChatroomCard";
 import PasswordModal from "../Modals/PasswordModal";
 
 export default function MainPlayground({
-    publicChatrooms,
+    allChatrooms,
     joinedChatrooms,
     onJoinChatroom,
     onEnterChatroom,
+    onLeaveChatroom,
     selectedChatroom,
     currentUser,
     handleBackToPlayground,
@@ -20,7 +21,7 @@ export default function MainPlayground({
     const [selectedPrivateRoom, setSelectedPrivateRoom] = useState(null);
 
     // Filter chatrooms based on search term
-    const filteredChatrooms = publicChatrooms.filter(
+    const filteredChatrooms = allChatrooms.filter(
         (room) =>
             room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (room.description &&
@@ -31,7 +32,7 @@ export default function MainPlayground({
 
     // Handle joining a chatroom
     const handleJoinAttempt = async (roomId) => {
-        const room = publicChatrooms.find((r) => r.id === roomId);
+        const room = allChatrooms.find((r) => r.id === roomId);
 
         // If the room is private, we need to prompt for password
         if (room && room.is_private) {
@@ -89,8 +90,8 @@ export default function MainPlayground({
     // Handle leaving a chatroom
     const handleLeaveChatroom = () => {
         // Notify parent component to clear the selected chatroom
-        if (onJoinChatroom) {
-            onJoinChatroom(null);
+        if (onLeaveChatroom) {
+            onLeaveChatroom(selectedChatroom);
         }
     };
 
@@ -151,8 +152,8 @@ export default function MainPlayground({
                 </div>
             </div>
 
-            {(searchTerm === "" ? publicChatrooms : filteredChatrooms)
-                .length === 0 ? (
+            {(searchTerm === "" ? allChatrooms : filteredChatrooms).length ===
+            0 ? (
                 <div className="text-center py-8">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -176,18 +177,17 @@ export default function MainPlayground({
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(searchTerm === ""
-                        ? publicChatrooms
-                        : filteredChatrooms
-                    ).map((room) => (
-                        <ChatroomCard
-                            key={room.id}
-                            room={room}
-                            onJoinAttempt={handleJoinAttempt}
-                            onEnterChatroom={onEnterChatroom}
-                            joinedChatrooms={joinedChatrooms}
-                        />
-                    ))}
+                    {(searchTerm === "" ? allChatrooms : filteredChatrooms).map(
+                        (room) => (
+                            <ChatroomCard
+                                key={room.id}
+                                room={room}
+                                onJoinAttempt={handleJoinAttempt}
+                                onEnterChatroom={onEnterChatroom}
+                                joinedChatrooms={joinedChatrooms}
+                            />
+                        )
+                    )}
                 </div>
             )}
         </div>

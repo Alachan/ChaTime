@@ -17,7 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Chat related routes
     Route::get('/chatrooms/{roomId}/members', [ChatRoomController::class, 'getMembers']);
     Route::get('/chatrooms/joined', [ChatRoomController::class, 'getJoinedChatRooms']);
-    Route::get('/chatrooms/public', [ChatRoomController::class, 'getPublicChatRooms']);
+    Route::get('/chatrooms/all', [ChatRoomController::class, 'getAllChatRooms']);
     Route::post('/create-chatroom', [ChatRoomController::class, 'createChatRoom']);
     Route::post('/join-chatroom', [ChatRoomController::class, 'joinChatRoom']);
     Route::post('/leave-chatroom', [ChatRoomController::class, 'leaveChatRoom']);

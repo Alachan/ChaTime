@@ -29,7 +29,7 @@ class ChatRoomController extends Controller
         return response()->json($members);
     }
 
-    public function getPublicChatRooms()
+    public function getAllChatRooms()
     {
         $chatRooms = ChatRoom::withCount('participants as member_count')
             ->with('creator:id,name,username')
@@ -131,7 +131,7 @@ class ChatRoomController extends Controller
             $chatRoom->loadCount('participants as member_count');
 
             // Broadcast to everyone
-            broadcast(new UserJoinedChat($user->id, $chatRoom->id));
+            broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
 
             // Personal notification to the user
             broadcast(new PersonalNotification(
