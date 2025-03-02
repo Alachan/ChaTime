@@ -45,24 +45,27 @@ export default function useChatRoom(chatroom, user) {
             setLoading(true);
             shouldScrollToBottom.current = true;
 
-            // Store the first_join flag in a variable
-            const firstJoin = chatroom.first_join;
+            // Load messages
+            fetchMessages();
 
-            // First load the messages
-            fetchMessages().then(() => {
-                // After messages are loaded, add the welcome message if this is first join
-                if (firstJoin) {
-                    // Add a welcome message
-                    const welcomeMessage = {
-                        id: `welcome-${Date.now()}`,
-                        message: `Welcome to ${chatroom.name}! Enjoy the new tea!`,
-                        system: true,
-                        sent_at: new Date().toISOString(),
-                    };
+            // // Store the first_join flag in a variable
+            // const firstJoin = chatroom.first_join;
 
-                    setMessages((prev) => [...prev, welcomeMessage]);
-                }
-            });
+            // // First load the messages
+            // fetchMessages().then(() => {
+            //     // After messages are loaded, add the welcome message if this is first join
+            //     if (firstJoin) {
+            //         // Add a welcome message
+            //         const welcomeMessage = {
+            //             id: `welcome-${Date.now()}`,
+            //             message: `Welcome to ${chatroom.name}! Enjoy the new tea!`,
+            //             system: true,
+            //             sent_at: new Date().toISOString(),
+            //         };
+
+            //         setMessages((prev) => [...prev, welcomeMessage]);
+            //     }
+            // });
             // Load participants into cache
             loadChatroomMembers(chatroom.id);
         }
@@ -216,14 +219,14 @@ export default function useChatRoom(chatroom, user) {
             setMemberCount(e.member_count);
 
             // Create different messages based on who joined
-            const joinMessage = {
-                id: `join-${Date.now()}`,
-                message: `${e.username} joined the chat`,
-                system: true,
-                sent_at: new Date().toISOString(),
-            };
+            // const joinMessage = {
+            //     id: `join-${Date.now()}`,
+            //     message: `${e.username} joined the chat`,
+            //     system: true,
+            //     sent_at: new Date().toISOString(),
+            // };
 
-            setMessages((prev) => [...prev, joinMessage]);
+            // setMessages((prev) => [...prev, joinMessage]);
 
             // Refresh the entire members cache when a new user joins
             loadChatroomMembers(chatroom.id);
@@ -235,16 +238,15 @@ export default function useChatRoom(chatroom, user) {
             setMemberCount(e.member_count);
 
             // Show leave notification
-            const leaveMessage = {
-                id: `leave-${Date.now()}`,
-                message: `${e.username} left the chat`,
-                system: true,
-                sent_at: new Date().toISOString(),
-            };
-            setMessages((prev) => [...prev, leaveMessage]);
+            // const leaveMessage = {
+            //     id: `leave-${Date.now()}`,
+            //     message: `${e.username} left the chat`,
+            //     system: true,
+            //     sent_at: new Date().toISOString(),
+            // };
+            // setMessages((prev) => [...prev, leaveMessage]);
         });
 
-        // Listen for messages
         channel.listen("MessageSent", (e) => {
             console.log("Message received:", e);
 
@@ -253,14 +255,19 @@ export default function useChatRoom(chatroom, user) {
                 id: e.id,
                 user_id: e.user_id,
                 message: e.message,
+                message_type: e.message_type,
                 sent_at: e.sent_at,
             };
 
-            // Enhance with user data from cache
-            const enrichedMessage = enrichMessageWithUserData(newMessage);
+            // Enhance with user data from cache (for user messages)
+            const enrichedMessage =
+                e.message_type === "user"
+                    ? enrichMessageWithUserData(newMessage)
+                    : newMessage; // For system messages, no need to enrich
 
-            // If we got Unknown User, refresh members cache and try again
+            // If we got Unknown User for a user message, refresh members cache and try again
             if (
+                e.message_type === "user" &&
                 enrichedMessage.user &&
                 !enrichedMessage.user.name &&
                 !enrichedMessage.user.username

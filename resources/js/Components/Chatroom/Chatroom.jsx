@@ -17,7 +17,7 @@ export default function Chatroom({
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [leavingInProgress, setLeavingInProgress] = useState(false);
 
-    // Reference to the message list for scrolling
+    // Reference to the message area for scrolling
     const messageAreaRef = useRef(null);
 
     // Use our custom hook for chat functionality

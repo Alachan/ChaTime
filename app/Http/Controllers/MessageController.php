@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Message;
 use App\Models\ChatRoom;
 use App\Events\MessageSent;
 use App\Events\MessageEdited;
 use App\Events\MessageDeleted;
-use Illuminate\Support\Facades\Log;
+use App\Services\SystemMessageService;
 
 
 class MessageController extends Controller
@@ -44,6 +45,19 @@ class MessageController extends Controller
         $query = Message::where('chat_room_id', $chatRoomId)
             ->with('user:id,name,username,profile_picture');
 
+        // Filter out user's own join/leave messages
+        $query->where(function ($q) use ($user) {
+            // Exclude the combination of all these conditions
+            $q->whereNot(function ($exclude) use ($user) {
+                $exclude->where('user_id', $user->id) // It's your message
+                    ->where('message_type', 'system') // It's a system message
+                    ->where(function ($content) {
+                        $content->where('message', 'like', '%joined for a sip%')
+                            ->orWhere('message', 'like', '%left for other refreshment%');
+                    }); // AND it's about joining or leaving
+            });
+        });
+
         // Apply historical message filter if needed
         if (!$showHistorical) {
             $query->where(function ($q) use ($userJoinedAt, $user) {
@@ -77,12 +91,6 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         try {
-            Log::info('Message send attempt', [
-                'user_id' => Auth::id(),
-                'chat_room_id' => $request->chat_room_id,
-                'message' => $request->message
-            ]);
-
             $message = Message::create([
                 'user_id' => Auth::id(),
                 'chat_room_id' => $request->chat_room_id,
@@ -127,5 +135,48 @@ class MessageController extends Controller
         broadcast(new MessageDeleted($id, $chatRoomId))->toOthers();
 
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    /**
+     * Send a system message to a chatroom
+     * This would typically be an admin function
+     */
+    public function sendSystemMessage(Request $request)
+    {
+        // Require admin role for this action
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'chat_room_id' => 'required|exists:chat_rooms,id',
+            'message' => 'required|string',
+            'message_type' => 'required|in:system,admin'
+        ]);
+
+        try {
+            // Use appropriate method based on message type
+            if ($request->message_type === Message::TYPE_ADMIN) {
+                $message = SystemMessageService::adminMessage(
+                    $request->chat_room_id,
+                    $request->message
+                );
+            } else {
+                $message = SystemMessageService::create(
+                    $request->chat_room_id,
+                    $request->message,
+                    Message::TYPE_SYSTEM
+                );
+            }
+
+            return response()->json($message);
+        } catch (\Exception $e) {
+            Log::error('System message send error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Failed to send system message'], 500);
+        }
     }
 }

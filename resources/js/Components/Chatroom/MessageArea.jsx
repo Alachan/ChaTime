@@ -18,11 +18,7 @@ export default function MessageArea({
 }) {
     // Group messages by date
     const groupedMessages = messages.reduce((grouped, message) => {
-        // Skip system messages for grouping
-        if (message.system) {
-            return [...grouped, { type: "system", message }];
-        }
-
+        // Get the date for the message
         const date = message.sent_at
             ? new Date(message.sent_at).toDateString()
             : "Unknown";
@@ -109,15 +105,6 @@ export default function MessageArea({
                                         currentUser={user}
                                     />
                                 ))}
-
-                            {/* For system messages, render them centered */}
-                            {group.type === "system" && (
-                                <div className="flex justify-center">
-                                    <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-500">
-                                        {group.message.message}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     ))}
 

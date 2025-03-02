@@ -30,4 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/send-message', [MessageController::class, 'sendMessage']);
     Route::post('/edit-message/{id}', [MessageController::class, 'editMessage']);
     Route::delete('/delete-message/{id}', [MessageController::class, 'deleteMessage']);
+    // System message route
+    Route::post('/send-system-message', [MessageController::class, 'sendSystemMessage']);
 });

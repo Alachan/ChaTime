@@ -19,7 +19,7 @@ export function formatMessageTime(dateString) {
 }
 
 /**
- * Format a date to display in a message list or chat header
+ * Format a date to display in a message area or chat header
  * Shows today/yesterday, or the actual date for older messages
  *
  * @param {string} dateString - ISO date string
