@@ -193,3 +193,24 @@ export function formatMemberCount(count) {
     if (count === 1) return "1 chatter";
     return `${count} chatters`;
 }
+
+/**
+ * Get the notification icon based on the notification type
+ *
+ * @param {string} type - Notification type
+ * @returns {string} - Emoji icon
+ */
+export function getNotificationIcon(type) {
+    switch (type) {
+        case "success":
+            return "✅";
+        case "error":
+            return "❌";
+        case "warning":
+            return "⚠️";
+        case "info":
+            return "ℹ️";
+        default:
+            return "📢";
+    }
+}

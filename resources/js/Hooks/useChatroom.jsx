@@ -198,17 +198,36 @@ export default function useChatRoom(chatroom, user) {
             console.log("User joined event received:", e);
             setMemberCount(e.member_count);
 
+            // Determine if the joining user is the current user
+            const isCurrentUser = e.user_id === user.id;
+
+            console.log(isCurrentUser);
+
+            // Create different messages based on who joined
+            let joinMessage;
+
+            if (isCurrentUser) {
+                // Welcome message for the current user
+                joinMessage = {
+                    id: `join-${Date.now()}`,
+                    message: `Welcome to the chat! You've joined ${chatroom.name}`,
+                    system: true,
+                    sent_at: new Date().toISOString(),
+                };
+            } else {
+                // Join notification for other users
+                joinMessage = {
+                    id: `join-${Date.now()}`,
+                    message: `${e.username} joined the chat`,
+                    system: true,
+                    sent_at: new Date().toISOString(),
+                };
+            }
+
+            setMessages((prev) => [...prev, joinMessage]);
+
             // Refresh the entire members cache when a new user joins
             loadChatroomMembers(chatroom.id);
-
-            // Show join notification
-            const joinMessage = {
-                id: `join-${Date.now()}`,
-                message: `${e.username} joined the chat`,
-                system: true,
-                sent_at: new Date().toISOString(),
-            };
-            setMessages((prev) => [...prev, joinMessage]);
         });
 
         // Listen for user left event

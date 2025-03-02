@@ -130,8 +130,8 @@ class ChatRoomController extends Controller
             $chatRoom->refresh();
             $chatRoom->loadCount('participants as member_count');
 
-            // Broadcast to <other></other>
-            broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
+            // Broadcast to everyone
+            broadcast(new UserJoinedChat($user->id, $chatRoom->id));
 
             // Personal notification to the user
             broadcast(new PersonalNotification(

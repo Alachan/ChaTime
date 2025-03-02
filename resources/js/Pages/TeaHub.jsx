@@ -6,6 +6,7 @@ import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
 import ProfileModal from "@/Components/Modals/ProfileModal";
 import { ChatProvider } from "@/Contexts/ChatContext";
 import toast, { Toaster } from "react-hot-toast";
+import { getNotificationIcon } from "@/Utils/formatter";
 
 export default function TeaHub() {
     const [chatrooms, setChatrooms] = useState([]);
@@ -102,22 +103,6 @@ export default function TeaHub() {
             channel.stopListening("PersonalNotification");
         };
     }, [currentUser]);
-
-    // Helper function to get icon for different notification types
-    const getNotificationIcon = (type) => {
-        switch (type) {
-            case "success":
-                return "✅";
-            case "error":
-                return "❌";
-            case "warning":
-                return "⚠️";
-            case "info":
-                return "ℹ️";
-            default:
-                return "📢";
-        }
-    };
 
     // Fetch on component mount
     useEffect(() => {

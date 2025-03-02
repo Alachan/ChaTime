@@ -15,5 +15,12 @@ Broadcast::channel('chatroom-{roomId}', function ($user, $roomId) {
         return false;
     }
 
-    return $chatroom->participants()->where('user_id', $user->id)->exists();
+    $isParticipant = $chatroom->participants()->where('user_id', $user->id)->exists();
+
+    return $isParticipant;
+});
+
+Broadcast::channel('test-channel', function ($user) {
+    // Return true to let *any* logged-in user subscribe
+    return (bool) $user;
 });

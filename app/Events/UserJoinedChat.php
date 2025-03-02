@@ -12,7 +12,7 @@ use App\Models\ChatRoom;
 
 class UserJoinedChat implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, SerializesModels;
 
     public $userId;
     public $username;
