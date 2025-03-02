@@ -40,6 +40,7 @@ class MessageSent implements ShouldBroadcast
             'id' => $this->message->id,
             'user_id' => $this->message->user_id,
             'message' => $this->message->message,
+            'message_type' => $this->message->message_type,
             'sent_at' => $this->message->sent_at,
         ];
     }

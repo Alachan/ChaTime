@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\ChatRoom;
 use App\Events\UserTyping;
 use App\Events\UserJoinedChat;
 use App\Events\UserLeftChat;
 use App\Events\PersonalNotification;
-use Illuminate\Support\Facades\Log;
+use App\Services\SystemMessageService;
 
 class ChatRoomController extends Controller
 {
@@ -80,6 +81,12 @@ class ChatRoomController extends Controller
         // Add the creator as a participant
         $chatRoom->participants()->attach($user->id);
 
+        // Create a system message that the room was created
+        SystemMessageService::adminMessage(
+            $chatRoom->id,
+            "Chatroom \"{$chatRoom->name}\" created by {$user->username}!"
+        );
+
         // Manually load the creator relationship and participant count
         $chatRoom->load('creator:id,name,username');
         $chatRoom->loadCount('participants as member_count');
@@ -130,7 +137,14 @@ class ChatRoomController extends Controller
             $chatRoom->refresh();
             $chatRoom->loadCount('participants as member_count');
 
-            // Broadcast to everyone
+            // Create system message for user join
+            SystemMessageService::userJoined($chatRoom->id, $user);
+
+            // Create welcome message for the new user (only visible to them)
+            SystemMessageService::welcomeUser($chatRoom->id, $user, false);
+
+
+            // Broadcast to other members
             broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
 
             // Personal notification to the user
@@ -166,6 +180,9 @@ class ChatRoomController extends Controller
                 'id' => $chatRoom->id,
                 'name' => $chatRoom->name
             ];
+
+            // Create a system message that user left before removing them
+            SystemMessageService::userLeft($chatRoom->id, $user);
 
             // Remove user from participants
             $chatRoom->participants()->detach($user->id);

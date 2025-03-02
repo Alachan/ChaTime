@@ -20,7 +20,6 @@ export default function ChatroomNavigation({ onBackClick, onLeaveChatroom }) {
                         clipRule="evenodd"
                     />
                 </svg>
-                Back to TeaHub
             </button>
             <button
                 onClick={onLeaveChatroom}

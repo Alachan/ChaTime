@@ -17,6 +17,7 @@ class Message extends Model
         'user_id',
         'chat_room_id',
         'message',
+        'message_type', // New column
         'is_read',
         'sent_at',
         'received_at',
@@ -30,6 +31,11 @@ class Message extends Model
         'received_at' => 'datetime',
         'edited_at' => 'datetime',
     ];
+
+    // Message type constants
+    const TYPE_USER = 'user';         // Regular user message
+    const TYPE_SYSTEM = 'system';     // System info message
+    const TYPE_ADMIN = 'admin';       // Admin message
 
     // Define the relationship with the User model.
     public function user()
