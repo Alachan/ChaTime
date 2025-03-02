@@ -9,7 +9,7 @@ import useLongPress from "@/Hooks/useLongPress";
 import ConfirmationModal from "@/Components/Modals/ConfirmationModal";
 import ChatService from "@/Services/ChatService";
 
-export default function MessageBubble({ message, currentUser }) {
+export default function MessageBubble({ message, currentUser, onMessageDeleted }) {
     const [contextMenu, setContextMenu] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -71,8 +71,9 @@ export default function MessageBubble({ message, currentUser }) {
 
         try {
             await ChatService.deleteMessage(message.id);
-            // Message deletion successful - the parent component will handle the UI update
-            // via the WebSocket event that is broadcast
+            if (onMessageDeleted) {
+                onMessageDeleted(message.id);
+            }
             setShowDeleteConfirm(false);
         } catch (error) {
             console.error("Error deleting message:", error);

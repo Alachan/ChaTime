@@ -174,6 +174,12 @@ export default function useChatRoom(chatroom, user) {
         }
     };
 
+    const handleLocalMessageDelete = (messageId) => {
+        setMessages((prevMessages) =>
+            prevMessages.filter((msg) => msg.id !== messageId)
+        );
+    };
+
     // Set up real-time event listeners
     useEffect(() => {
         if (!chatroom?.id || !window.Echo) return;
@@ -254,11 +260,10 @@ export default function useChatRoom(chatroom, user) {
 
         // Listen for message deletions
         channel.listen("MessageDeleted", (e) => {
-            console.log("Message deleted event:", e);
+            console.log("Message deleted event received:", e);
 
-            // Remove the message from our state
             setMessages((prevMessages) =>
-                prevMessages.filter((msg) => msg.id !== e.id)
+                prevMessages.filter((msg) => msg.id !== Number(e.id))
             );
         });
 
@@ -297,6 +302,8 @@ export default function useChatRoom(chatroom, user) {
         handleInputChange,
         sendMessage,
         handleKeyDown,
+
+        handleLocalMessageDelete,
 
         // Display helpers
         typingText,

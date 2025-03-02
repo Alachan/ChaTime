@@ -38,6 +38,7 @@ export default function Chatroom({
         showHistorical,
         toggleHistoricalMessages,
         memberCount,
+        handleLocalMessageDelete,
     } = useChatRoom(chatroom, user);
 
     // Set up scroll event listener for infinite scrolling
@@ -145,6 +146,7 @@ export default function Chatroom({
                 typingText={typingText}
                 messageEndRef={messageEndRef}
                 listRef={messageAreaRef}
+                onMessageDeleted={handleLocalMessageDelete}
             />
 
             {/* Message Input */}

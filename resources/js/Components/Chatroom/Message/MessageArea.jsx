@@ -15,6 +15,7 @@ export default function MessageArea({
     typingText,
     messageEndRef,
     listRef,
+    onMessageDeleted,
 }) {
     // Group messages by date
     const groupedMessages = messages.reduce((grouped, message) => {
@@ -103,6 +104,7 @@ export default function MessageArea({
                                         key={message.id}
                                         message={message}
                                         currentUser={user}
+                                        onMessageDeleted={onMessageDeleted}
                                     />
                                 ))}
                         </div>
