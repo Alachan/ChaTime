@@ -205,7 +205,7 @@ function renderUserMessage(
                 <div
                     className={`mx-3 p-3 rounded-lg shadow-sm ${
                         isMyMessage ? "bg-indigo-100" : "bg-white"
-                    }`}
+                    } max-w-md break-words`}
                     onContextMenu={isMyMessage ? handleRightClick : undefined}
                     {...(isMyMessage ? longPressEvent : {})}
                 >
@@ -217,7 +217,8 @@ function renderUserMessage(
                     )}
 
                     {/* Using safe HTML for formatted message text */}
-                    <p
+                    <div
+                        className="overflow-hidden overflow-wrap-anywhere break-words"
                         dangerouslySetInnerHTML={{
                             __html: formatMessageText(message.message),
                         }}

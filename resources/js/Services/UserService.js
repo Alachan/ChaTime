@@ -29,7 +29,7 @@ export default {
                 formData.append(key, profileData[key]);
             });
 
-            return axios.post("/api/profile/update", formData, {
+            return axios.post("/api/user/update", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -37,7 +37,7 @@ export default {
         }
 
         // Regular JSON post if no files
-        return axios.post("/api/profile/update", profileData);
+        return axios.post("/api/user/update", profileData);
     },
 
     /**

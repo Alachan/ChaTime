@@ -44,6 +44,13 @@ body {
     scrollbar-width: none; /* Firefox */
 }
 
+/* Add this utility class for text wrapping */
+.overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;

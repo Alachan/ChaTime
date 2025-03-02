@@ -12,24 +12,25 @@ Route::post('/login', [AuthController::class, 'login'])->name('api.login');;
 Route::middleware('auth:sanctum')->group(function () {
     // User related routes
     Route::get('/user', [UserController::class, 'me']);
-    Route::post('/profile/update', [UserController::class, 'updateProfile']);
+    Route::post('/user/update', [UserController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    // Chat related routes
-    Route::get('/chatrooms/{roomId}/members', [ChatRoomController::class, 'getMembers']);
+
+    // Chatroom resource routes
+    Route::get('/chatrooms', [ChatRoomController::class, 'getAllChatRooms']);
+    Route::post('/chatrooms', [ChatRoomController::class, 'createChatRoom']);
     Route::get('/chatrooms/joined', [ChatRoomController::class, 'getJoinedChatRooms']);
-    Route::get('/chatrooms/all', [ChatRoomController::class, 'getAllChatRooms']);
-    Route::post('/create-chatroom', [ChatRoomController::class, 'createChatRoom']);
-    Route::post('/join-chatroom', [ChatRoomController::class, 'joinChatRoom']);
-    Route::post('/leave-chatroom', [ChatRoomController::class, 'leaveChatRoom']);
-    Route::post(
-        '/user-typing',
-        [ChatRoomController::class, 'userTyping']
-    );
+    Route::get('/chatrooms/{roomId}/members', [ChatRoomController::class, 'getMembers']);
+    // Membership actions as separate endpoints
+    Route::post('/chatrooms/join', [ChatRoomController::class, 'joinChatRoom']);
+    Route::post('/chatrooms/leave', [ChatRoomController::class, 'leaveChatRoom']);
+    // Activity indicators
+    Route::post('/chatrooms/typing', [ChatRoomController::class, 'userTyping']);
+
     // Message related routes
     Route::get('/messages/{chatRoomId}', [MessageController::class, 'getMessages']);
-    Route::post('/send-message', [MessageController::class, 'sendMessage']);
-    Route::post('/edit-message/{id}', [MessageController::class, 'editMessage']);
-    Route::delete('/delete-message/{id}', [MessageController::class, 'deleteMessage']);
+    Route::post('/messages', [MessageController::class, 'sendMessage']);
+    Route::post('/messagese/{id}', [MessageController::class, 'editMessage']);
+    Route::delete('/messages/{id}', [MessageController::class, 'deleteMessage']);
     // System message route
-    Route::post('/send-system-message', [MessageController::class, 'sendSystemMessage']);
+    Route::post('/messages/system', [MessageController::class, 'sendSystemMessage']);
 });

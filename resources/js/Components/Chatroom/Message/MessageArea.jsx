@@ -83,7 +83,7 @@ export default function MessageArea({
                     </p>
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-w-4xl mx-auto">
                     {/* Render grouped messages by date */}
                     {groupedMessages.map((group, groupIndex) => (
                         <div key={groupIndex} className="space-y-4">

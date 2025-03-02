@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import UserService from "@/Services/UserService";
+import ChatService from "@/Services/ChatService";
 import Sidebar from "@/Components/Layout/Sidebar";
 import MainPlayground from "@/Components/Layout/MainPlayground";
 import CreateChatroomModal from "@/Components/Modals/CreateChatroomModal";
@@ -23,7 +24,7 @@ export default function TeaHub() {
     // Fetch user data
     const fetchUserData = async () => {
         try {
-            const response = await axios.get("/api/user");
+            const response = await UserService.getCurrentUser();
             setCurrentUser(response.data.user);
         } catch (error) {
             console.error("Failed to fetch user data:", error);
@@ -35,13 +36,13 @@ export default function TeaHub() {
         setLoading(true);
         try {
             // Use our actual API endpoints
-            const [joinedResponse, publicResponse] = await Promise.all([
-                axios.get("/api/chatrooms/joined"),
-                axios.get("/api/chatrooms/all"),
+            const [joinedResponse, allResponse] = await Promise.all([
+                ChatService.getJoinedChatrooms(),
+                ChatService.getAllChatrooms(),
             ]);
 
             setJoinedChatrooms(joinedResponse.data || []);
-            setAllChatrooms(publicResponse.data || []);
+            setAllChatrooms(allResponse.data || []);
         } catch (error) {
             console.error("Failed to fetch chatrooms:", error);
         } finally {
