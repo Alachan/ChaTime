@@ -18,7 +18,6 @@ return new class extends Migration
             $table->text('message');
             $table->boolean('is_read')->default(false);
             $table->timestamp('sent_at')->nullable();
-            $table->timestamp('received_at')->nullable();
             $table->timestamp('edited_at')->nullable();
             $table->softDeletes();
         });

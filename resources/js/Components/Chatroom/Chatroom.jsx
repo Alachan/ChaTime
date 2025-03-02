@@ -5,6 +5,7 @@ import ChatroomHeader from "./ChatroomHeader";
 import ChatroomNavigation from "./ChatroomNavigation";
 import MessageArea from "./MessageArea";
 import MessageInput from "./MessageInput";
+import ChatService from "@/Services/ChatService";
 import axios from "axios";
 
 export default function Chatroom({
@@ -92,9 +93,7 @@ export default function Chatroom({
     const handleLeaveChatroom = async () => {
         setLeavingInProgress(true);
         try {
-            await axios.post("/api/leave-chatroom", {
-                chat_room_id: chatroom.id,
-            });
+            await ChatService.leaveChatroom(chatroom.id);
 
             if (onLeave) {
                 onLeave();

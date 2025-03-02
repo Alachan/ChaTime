@@ -58,6 +58,16 @@ class MessageController extends Controller
             });
         });
 
+        // Filter out other's welcome messages
+        $query->where(function ($q) use ($user) {
+            // Exclude the combination of all these conditions
+            $q->whereNot(function ($exclude) use ($user) {
+                $exclude->where('user_id', '!=', $user->id) // It's not your message
+                    ->where('message_type', 'system') // It's a system message
+                    ->where('message', 'like', '%Enjoy the new tea%'); // It's about joining
+            });
+        });
+
         // Apply historical message filter if needed
         if (!$showHistorical) {
             $query->where(function ($q) use ($userJoinedAt, $user) {

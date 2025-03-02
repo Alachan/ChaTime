@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import ChatService from "@/Services/ChatService";
 import Chatroom from "../Chatroom/Chatroom";
 import ChatroomCard from "../Chatroom/ChatroomCard";
 import PasswordModal from "../Modals/PasswordModal";
@@ -50,10 +50,7 @@ export default function MainPlayground({
         setJoinError(null);
 
         try {
-            await axios.post("/api/join-chatroom", {
-                chat_room_id: roomId,
-                password: password,
-            });
+            await ChatService.joinChatroom(roomId, password);
 
             // Close password modal if it was open
             setSelectedPrivateRoom(null);

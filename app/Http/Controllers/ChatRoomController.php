@@ -84,7 +84,8 @@ class ChatRoomController extends Controller
         // Create a system message that the room was created
         SystemMessageService::adminMessage(
             $chatRoom->id,
-            "Chatroom \"{$chatRoom->name}\" created by {$user->username}!"
+            "Chatroom \"{$chatRoom->name}\" created by {$user->username}!",
+            $user,
         );
 
         // Manually load the creator relationship and participant count

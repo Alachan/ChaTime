@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
-import axios from "axios";
+import UserService from "@/Services/UserService";
 
 export default function Sidebar({
     chatrooms,
@@ -25,7 +25,7 @@ export default function Sidebar({
 
     const handleLogout = async () => {
         try {
-            await axios.post("/api/logout");
+            await UserService.logout();
             localStorage.removeItem("auth_token");
 
             // Clear the auth_token cookie by setting it to expire in the past

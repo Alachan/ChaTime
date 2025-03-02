@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import ChatService from "@/Services/ChatService";
 import { motion } from "framer-motion";
 
 export default function CreateChatroomModal({
@@ -31,7 +31,7 @@ export default function CreateChatroomModal({
         setIsLoading(true);
 
         try {
-            const response = await axios.post("/api/create-chatroom", formData);
+            const response = await ChatService.createChatroom(formData);
 
             // Success! Let the parent component know a chatroom was created
             if (onChatroomCreated) {

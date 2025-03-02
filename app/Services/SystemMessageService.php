@@ -107,8 +107,8 @@ class SystemMessageService
      * @param bool $broadcast
      * @return Message
      */
-    public static function adminMessage($chatRoomId, $messageText, $broadcast = true)
+    public static function adminMessage($chatRoomId, $messageText, User $user, $broadcast = true)
     {
-        return self::create($chatRoomId, $messageText, Message::TYPE_ADMIN, null, $broadcast);
+        return self::create($chatRoomId, $messageText, Message::TYPE_ADMIN, $user->id, $broadcast);
     }
 }

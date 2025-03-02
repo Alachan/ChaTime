@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import UserService from "@/Services/UserService";
 
 export default function ProfileModal({
     isOpen,
@@ -66,11 +66,7 @@ export default function ProfileModal({
         }
 
         try {
-            const response = await axios.post("/api/profile/update", data, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const response = await UserService.updateProfile(data);
 
             // Get the updated user data from response
             const updatedUser = response.data.user;

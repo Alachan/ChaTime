@@ -20,7 +20,6 @@ class Message extends Model
         'message_type', // New column
         'is_read',
         'sent_at',
-        'received_at',
         'edited_at',
     ];
 
@@ -28,7 +27,6 @@ class Message extends Model
     protected $casts = [
         'is_read' => 'boolean',
         'sent_at' => 'datetime',
-        'received_at' => 'datetime',
         'edited_at' => 'datetime',
     ];
 
