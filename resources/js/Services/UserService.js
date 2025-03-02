@@ -14,16 +14,6 @@ export default {
     },
 
     /**
-     * Get basic information for a user by ID
-     *
-     * @param {number} userId - The ID of the user
-     * @returns {Promise} - API response with basic user data
-     */
-    getUserBasicInfo(userId) {
-        return axios.get(`/api/users/${userId}/basic`);
-    },
-
-    /**
      * Update the current user's profile
      *
      * @param {Object} profileData - The profile data to update

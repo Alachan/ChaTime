@@ -12,7 +12,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('api.login');;
 Route::middleware('auth:sanctum')->group(function () {
     // User related routes
     Route::get('/user', [UserController::class, 'me']);
-    Route::get('/users/{id}/basic', [UserController::class, 'getBasicInfo']);
     Route::post('/profile/update', [UserController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
     // Chat related routes

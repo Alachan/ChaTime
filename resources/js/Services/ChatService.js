@@ -62,14 +62,4 @@ export default {
     getChatroomMembers(chatRoomId) {
         return axios.get(`/api/chatrooms/${chatRoomId}/members`);
     },
-
-    /** 
-     * Get a user's basic information
-     *
-     * @param {number} userId - The ID of the user
-     * @returns {Promise} - API response
-     */
-    getUserBasicInfo(userId) {
-        return axios.get(`/api/users/${userId}/basic`);
-    },
 };
