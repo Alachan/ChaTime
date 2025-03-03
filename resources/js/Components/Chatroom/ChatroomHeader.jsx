@@ -3,7 +3,7 @@
  */
 export default function ChatroomHeader({ chatroom, memberCount }) {
     return (
-        <div className="bg-white border-b md:pl-4 pl-12 py-3 flex items-center justify-between shadow-sm">
+        <div className="bg-light-cyan border-b md:pl-4 pl-12 py-3 flex items-center justify-between shadow-sm z-50">
             <div>
                 <h2 className="text-xl font-semibold">{chatroom.name}</h2>
                 <p className="text-sm text-gray-500">{chatroom.description}</p>

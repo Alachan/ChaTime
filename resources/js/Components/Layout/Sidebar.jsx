@@ -86,7 +86,7 @@ export default function Sidebar({
 
             {/* Sidebar */}
             <aside
-                className={`bg-gray-900 text-white w-72 h-screen flex flex-col transition-all duration-300 ease-in-out
+                className={`bg-brush text-tea w-72 h-screen flex flex-col transition-all duration-300 ease-in-out
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
                 md:translate-x-0 fixed md:sticky top-0 left-0 z-40 shadow-xl`}
             >
@@ -104,7 +104,7 @@ export default function Sidebar({
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-indigo-500 text-xl font-bold">
+                                <div className="w-full h-full flex items-center justify-center bg-pinkish text-primary text-xl font-bold">
                                     {user?.name?.charAt(0) || "?"}
                                 </div>
                             )}
@@ -139,16 +139,16 @@ export default function Sidebar({
 
                         {/* Profile Dropdown Menu */}
                         {profileMenuOpen && (
-                            <div className="absolute top-full left-0 w-full mt-2 py-2 bg-gray-800 rounded-md shadow-lg z-50">
+                            <div className="absolute top-full left-0 w-full mt-2 py-2 bg-land rounded-md shadow-lg z-50">
                                 <button
                                     onClick={handleEditProfile}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
+                                    className="block w-full text-left px-4 py-2 text-sm text-light-cyan hover:bg-gray-700"
                                 >
                                     Edit Profile
                                 </button>
                                 <button
                                     onClick={handleLogout}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
+                                    className="block w-full text-left px-4 py-2 text-sm text-light-cyan hover:bg-gray-700"
                                 >
                                     Logout
                                 </button>
@@ -203,7 +203,7 @@ export default function Sidebar({
                 <div className="p-4 border-t border-gray-700">
                     <button
                         onClick={onCreateChatroom}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md flex items-center justify-center transition-colors"
+                        className="w-full bg-happy-blue hover:bg-medsea text-light-cyan py-2 px-4 rounded-md flex items-center justify-center transition-colors"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

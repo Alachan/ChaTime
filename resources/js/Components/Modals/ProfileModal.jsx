@@ -108,13 +108,15 @@ export default function ProfileModal({
 
             {/* Modal Container - Full screen on mobile, centered modal on desktop */}
             <div className="flex items-center justify-center p-4">
-                <div className="bg-gray-800 text-white fixed inset-0 md:relative md:inset-auto w-full md:max-w-md md:rounded-lg md:mx-auto md:my-auto md:shadow-xl z-50">
+                <div className="bg-moody text-white fixed inset-0 md:relative md:inset-auto w-full md:max-w-md md:rounded-lg md:mx-auto md:my-auto md:shadow-xl z-50">
                     {/* Unified header for both mobile and desktop */}
-                    <div className="bg-gray-900 p-4 md:p-6 flex items-center justify-between border-b border-gray-700 md:rounded-t-lg">
-                        <h2 className="text-xl font-bold">Edit Profile</h2>
+                    <div className="bg-air p-4 md:p-6 flex items-center justify-between border-b border-gray-pink md:rounded-t-lg">
+                        <h2 className="text-xl text-killer font-bold">
+                            Edit Profile
+                        </h2>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-white"
+                            className="text-gray-400 hover:text-gray-500"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -142,7 +144,7 @@ export default function ProfileModal({
                         )}
 
                         {successMessage && (
-                            <div className="mb-4 p-3 bg-green-900 text-green-200 rounded">
+                            <div className="mb-4 p-3 bg-green-200 text-green-900 rounded">
                                 {successMessage}
                             </div>
                         )}
@@ -166,17 +168,17 @@ export default function ProfileModal({
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-indigo-500 text-xl font-bold">
+                                            <div className="w-full h-full flex items-center justify-center bg-secondary text-light-cyan text-xl font-bold">
                                                 {user?.name?.charAt(0) || "?"}
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Edit Icon Overlay */}
-                                    <label className="absolute bottom-0 right-0 bg-indigo-600 rounded-full p-2 cursor-pointer shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <label className="absolute bottom-0 right-0 bg-secondary rounded-full p-2 cursor-pointer shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
-                                            className="h-4 w-4 text-white"
+                                            className="h-4 w-4 text-light-cyan"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
@@ -198,14 +200,14 @@ export default function ProfileModal({
                                 </div>
 
                                 {/* Display Username (not editable) */}
-                                <div className="mt-2 text-gray-400 text-sm">
+                                <div className="mt-2 text-killer text-sm">
                                     @{user?.username || "username"}
                                 </div>
                             </div>
 
                             {/* Display Name */}
                             <div className="mb-4">
-                                <label className="block text-gray-300 mb-2">
+                                <label className="block text-blood mb-2">
                                     Display Name
                                 </label>
                                 <input
@@ -213,20 +215,20 @@ export default function ProfileModal({
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring focus:ring-indigo-500 text-white"
+                                    className="w-full px-4 py-2 bg-windy border border-gray-600 rounded-lg focus:ring focus:ring-land text-primary"
                                 />
                             </div>
 
                             {/* Bio */}
                             <div className="mb-6">
-                                <label className="block text-gray-300 mb-2">
+                                <label className="block text-blood mb-2">
                                     Bio
                                 </label>
                                 <textarea
                                     name="bio"
                                     value={formData.bio}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring focus:ring-indigo-500 text-white"
+                                    className="w-full px-4 py-2 bg-windy border border-gray-600 rounded-lg focus:ring focus:ring-land text-primary"
                                     rows="3"
                                 ></textarea>
                             </div>
@@ -235,7 +237,7 @@ export default function ProfileModal({
                             <div className="flex justify-end">
                                 <button
                                     type="submit"
-                                    className="mx-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="mx-auto px-4 py-2 bg-moderate-blue text-tea rounded-lg hover:bg-brush transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={isLoading || !hasChanges}
                                 >
                                     {isLoading ? "Saving..." : "Save Changes"}

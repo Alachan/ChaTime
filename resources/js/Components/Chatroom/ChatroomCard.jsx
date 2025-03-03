@@ -12,7 +12,7 @@ export default function ChatroomCard({
     );
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow flex flex-col h-full">
+        <div className="bg-memory p-4 rounded-lg shadow hover:shadow-md transition-shadow flex flex-col h-full">
             {/* Header section with chatroom name and lock icon */}
             <div className="mb-2 flex items-center">
                 {room.is_private && (
@@ -62,7 +62,7 @@ export default function ChatroomCard({
             {/* Action button */}
             {isJoined ? (
                 <button
-                    className="w-full mt-auto bg-green-500 hover:bg-green-600 text-white py-2 rounded-md transition-colors flex items-center justify-center"
+                    className="w-full mt-auto bg-spring hover:bg-garden text-boomer py-2 rounded-md transition-colors flex items-center justify-center"
                     onClick={() => onEnterChatroom(room.id)}
                 >
                     <svg
@@ -81,7 +81,7 @@ export default function ChatroomCard({
                 </button>
             ) : (
                 <button
-                    className="w-full mt-auto bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md transition-colors flex items-center justify-center"
+                    className="w-full mt-auto bg-medsea hover:bg-happy-blue text-pinkish py-2 rounded-md transition-colors flex items-center justify-center"
                     onClick={() => onJoinAttempt(room.id)}
                 >
                     <svg

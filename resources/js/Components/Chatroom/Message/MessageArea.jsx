@@ -1,7 +1,7 @@
 import { memo } from "react";
 import MessageBubble from "./MessageBubble";
 import { formatRelativeTime } from "@/Utils/formatter";
-
+import SakuraEffect from "@/Components/Effects/SakuraEffect";
 /**
  * The scrollable message list component showing chat history
  */
@@ -51,12 +51,13 @@ export default function MessageArea({
 
     return (
         <div ref={areaRef} className="flex-1 bg-gray-50 p-4 overflow-y-auto">
+            <SakuraEffect />
             {/* Load More Button - always visible if there are more messages */}
             {hasMoreMessages && (
                 <div className="flex justify-center items-center mb-4">
                     <button
                         onClick={loadMoreMessages}
-                        className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-full text-sm flex items-center justify-center transition-colors"
+                        className="bg-indigo-50 hover:bg-indigo-100 text-happy-blue font-medium py-2 px-4 rounded-full text-sm flex items-center justify-center transition-colors"
                         disabled={loadingMore}
                     >
                         {loadingMore ? (
