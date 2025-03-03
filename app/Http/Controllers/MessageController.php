@@ -26,10 +26,6 @@ class MessageController extends Controller
             $chatRoom = ChatRoom::findOrFail($chatRoomId);
 
             if (!$chatRoom->participants->contains($user->id)) {
-                Log::warning('User not a participant', [
-                    'user_id' => $user->id,
-                    'chat_room_id' => $chatRoomId
-                ]);
                 return response()->json(['error' => 'You are not a member of this chat room'], 403);
             }
 
@@ -38,22 +34,14 @@ class MessageController extends Controller
                 ->where('user_id', $user->id)
                 ->first()->pivot->created_at;
 
-            // Find if we should show historical messages (before the user joined)
-            $showHistorical = filter_var($request->query('show_historical', false), FILTER_VALIDATE_BOOLEAN);
             $beforeId = $request->query('before_id');
             $pageSize = min(intval($request->query('page_size', 50)), 100);
 
-            // Base query
+            // Base query - start with most recent messages
             $query = Message::where('chat_room_id', $chatRoomId)
                 ->with('user:id,name,username,profile_picture');
 
-            // Log the base query
-            Log::info('Base Query SQL', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings()
-            ]);
-
-            // Filter out user's own join/leave messages
+            // Filter out user's own join/leave messages and others' welcome messages
             $query->where(function ($q) use ($user) {
                 $q->whereNot(function ($exclude) use ($user) {
                     $exclude->where('user_id', $user->id)
@@ -63,10 +51,7 @@ class MessageController extends Controller
                                 ->orWhere('message', 'like', '%left for other refreshment%');
                         });
                 });
-            });
-
-            // Filter out other's welcome messages
-            $query->where(function ($q) use ($user) {
+            })->where(function ($q) use ($user) {
                 $q->whereNot(function ($exclude) use ($user) {
                     $exclude->where('user_id', '!=', $user->id)
                         ->where('message_type', 'system')
@@ -74,52 +59,39 @@ class MessageController extends Controller
                 });
             });
 
-            // Apply historical message filter if needed
-            if (!$showHistorical) {
+            // Apply pagination if a before_id is provided
+            if ($beforeId) {
+                $query->where('id', '<', $beforeId);
+            } else {
+                // Only show messages sent after the user joined the chatroom
                 $query->where(function ($q) use ($userJoinedAt, $user) {
                     $q->where('sent_at', '>=', $userJoinedAt)
                         ->orWhere('user_id', $user->id);
                 });
             }
 
-
-            // Apply pagination if a before_id is provided
-            if ($beforeId) {
-                $query->where('id', '<', $beforeId);
-            }
-
-            // Log the final query SQL
-            Log::info('Final Query SQL', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings()
-            ]);
-
-            // Get messages in descending order for pagination, but return in ascending order
-            $messages = $query->orderBy('id', 'desc')
+            // Get messages in chunks for pagination
+            $messages = $query->orderBy('id', 'desc')  // Most recent first for pagination
                 ->limit($pageSize)
                 ->get()
-                ->sortBy('id')
+                ->sortBy('id')  // Then sort to display oldest first
                 ->values();
 
             // Check if there are more messages to load
-            $hasMore = $beforeId ? $query->count() >= $pageSize : false;
+            $oldestLoadedId = $messages->first() ? $messages->first()->id : null;
+            $hasMoreMessages = false;
 
-            // Prepare response data
-            $responseData = [
+            if ($oldestLoadedId) {
+                $hasMoreMessages = Message::where('chat_room_id', $chatRoomId)
+                    ->where('id', '<', $oldestLoadedId)
+                    ->exists();
+            }
+
+            return response()->json([
                 'messages' => $messages,
-                'has_more' => $hasMore,
-                'oldest_id' => $messages->first() ? $messages->first()->id : null,
-            ];
-
-            // Log response details
-            Log::info('GetMessages Response', [
-                'message_count' => $messages->count(),
-                'has_more' => $hasMore,
-                'oldest_id' => $responseData['oldest_id']
+                'has_more' => $hasMoreMessages,
+                'oldest_id' => $oldestLoadedId,
             ]);
-
-
-            return response()->json($responseData);
         } catch (\Exception $e) {
             // Log any unexpected errors
             Log::error('GetMessages Error', [

@@ -23,13 +23,13 @@ export function useScrollBehavior(
     hasMoreMessages,
     loadMoreMessages
 ) {
-    // Set up scroll event listener for infinite scrolling
+    // Set up scroll event listener for automatic loading when scrolling to top
     useEffect(() => {
         const messageArea = messageAreaRef.current;
 
         const handleScroll = () => {
             if (messageArea) {
-                // If user scrolls to the top and we have more messages
+                // Auto-load more when reaching the top (within 50px)
                 if (
                     messageArea.scrollTop < 50 &&
                     hasMoreMessages &&
@@ -41,9 +41,9 @@ export function useScrollBehavior(
                 // Determine if we should scroll to bottom for new messages
                 shouldScrollToBottom.current =
                     messageArea.scrollHeight -
-                        messageArea.scrollTop -
-                        messageArea.clientHeight <
-                    100;
+                    messageArea.scrollTop -
+                    messageArea.clientHeight;
+                100;
             }
         };
 
@@ -64,7 +64,19 @@ export function useScrollBehavior(
         shouldScrollToBottom,
     ]);
 
-    // Handle scroll behavior after messages are loaded
+    // Maintain scroll position when loading older messages
+    useEffect(() => {
+        // Only run this when loadingMore changes from true to false
+        if (messageAreaRef.current && messages.length > 0 && !loadingMore) {
+            // If we just loaded more messages, we want to maintain the user's relative scroll position
+            if (loadingMore === false) {
+                // We don't need to do anything special here as React will maintain the scroll position
+                // relative to the previously visible content
+            }
+        }
+    }, [loadingMore, messages]);
+
+    // Handle scroll behavior after initial load
     useEffect(() => {
         if (messages.length > 0 && !loading && !loadingMore) {
             if (shouldScrollToBottom.current && messageEndRef.current) {
@@ -72,4 +84,6 @@ export function useScrollBehavior(
             }
         }
     }, [messages, loading, loadingMore, messageEndRef, shouldScrollToBottom]);
+
+    return {};
 }

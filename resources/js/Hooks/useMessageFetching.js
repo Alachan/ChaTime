@@ -8,13 +8,12 @@ export function useMessageFetching(chatRoomId, showHistorical = false) {
     const [oldestMessageId, setOldestMessageId] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Fetch initial messages
+    // Fetch initial messages (most recent)
     const fetchMessages = async () => {
         setLoading(true);
         try {
             const response = await ChatService.getMessages(chatRoomId, {
                 page_size: 50,
-                show_historical: showHistorical,
             });
 
             const data = response.data;
@@ -28,7 +27,7 @@ export function useMessageFetching(chatRoomId, showHistorical = false) {
         }
     };
 
-    // Load older messages for pagination
+    // Load older messages (can be triggered by button or scroll)
     const loadMoreMessages = async () => {
         if (!hasMoreMessages || !oldestMessageId || loadingMore) return;
 
@@ -37,16 +36,32 @@ export function useMessageFetching(chatRoomId, showHistorical = false) {
             const response = await ChatService.getMessages(chatRoomId, {
                 before_id: oldestMessageId,
                 page_size: 30,
-                show_historical: showHistorical,
             });
 
             const data = response.data;
-            setMessages((prevMessages) => [
-                ...(data.messages || []),
-                ...prevMessages,
-            ]);
+            const newMessages = data.messages || [];
+
+            // Add older messages to the top of the list, ensuring no duplicates
+            setMessages((prevMessages) => {
+                // Create a Set of existing message IDs for fast lookup
+                const existingIds = new Set(prevMessages.map((msg) => msg.id));
+
+                // Filter out any messages that already exist in our state
+                const uniqueNewMessages = newMessages.filter(
+                    (msg) => !existingIds.has(msg.id)
+                );
+
+                return [...uniqueNewMessages, ...prevMessages];
+            });
+
+            // Only update oldest ID if we actually got new messages
+            if (newMessages.length > 0) {
+                const newOldestId = newMessages[0]?.id;
+                if (newOldestId && newOldestId !== oldestMessageId) {
+                    setOldestMessageId(newOldestId);
+                }
+            }
             setHasMoreMessages(data.has_more || false);
-            setOldestMessageId(data.oldest_id);
         } catch (error) {
             console.error("Error loading more messages:", error);
         } finally {

@@ -10,8 +10,7 @@ export default function MessageArea({
     loading,
     loadingMore,
     hasMoreMessages,
-    showHistorical,
-    toggleHistoricalMessages,
+    loadMoreMessages,
     user,
     typingText,
     messageEndRef,
@@ -52,27 +51,39 @@ export default function MessageArea({
 
     return (
         <div ref={areaRef} className="flex-1 bg-gray-50 p-4 overflow-y-auto">
-            {/* Historical messages toggle */}
-            {hasMoreMessages || showHistorical ? (
-                <div className="text-center mb-2">
+            {/* Load More Button - always visible if there are more messages */}
+            {hasMoreMessages && (
+                <div className="flex justify-center items-center mb-4">
                     <button
-                        onClick={toggleHistoricalMessages}
-                        className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                        onClick={loadMoreMessages}
+                        className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-full text-sm flex items-center justify-center transition-colors"
+                        disabled={loadingMore}
                     >
-                        {showHistorical
-                            ? "Hide older messages"
-                            : "Show messages from before you joined"}
+                        {loadingMore ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-indigo-700 mr-2"></div>
+                                Loading...
+                            </>
+                        ) : (
+                            <>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M7 11l5-5m0 0l5 5m-5-5v12"
+                                    />
+                                </svg>
+                                Load earlier messages
+                            </>
+                        )}
                     </button>
-                </div>
-            ) : null}
-
-            {/* Loading indicator for older messages */}
-            {loadingMore && (
-                <div className="flex justify-center items-center py-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-indigo-500"></div>
-                    <span className="ml-2 text-sm text-gray-500">
-                        Loading earlier messages...
-                    </span>
                 </div>
             )}
 
@@ -83,9 +94,7 @@ export default function MessageArea({
                 </div>
             ) : messages.length === 0 ? (
                 <div className="flex justify-center items-center h-full">
-                    <p className="text-gray-500">
-                        No messages yet. Start the conversation!
-                    </p>
+                    <p className="text-gray-500">No tea yet. Start brewing!</p>
                 </div>
             ) : (
                 <div className="space-y-4 max-w-4xl mx-auto">

@@ -93,8 +93,7 @@ export default function Chatroom({
                 loading={loading}
                 loadingMore={loadingMore}
                 hasMoreMessages={hasMoreMessages}
-                showHistorical={showHistorical}
-                toggleHistoricalMessages={toggleHistoricalMessages}
+                loadMoreMessages={loadMoreMessages}
                 user={user}
                 typingText={typingText}
                 messageEndRef={messageEndRef}
