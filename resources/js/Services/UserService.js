@@ -20,23 +20,6 @@ export default {
      * @returns {Promise} - API response
      */
     updateProfile(profileData) {
-        // Create a FormData object if there are files to upload
-        if (profileData.profile_picture instanceof File) {
-            const formData = new FormData();
-
-            // Add all properties to the form data
-            Object.keys(profileData).forEach((key) => {
-                formData.append(key, profileData[key]);
-            });
-
-            return axios.post("/api/user/update", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-        }
-
-        // Regular JSON post if no files
         return axios.post("/api/user/update", profileData);
     },
 

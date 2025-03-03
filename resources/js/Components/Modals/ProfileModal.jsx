@@ -66,16 +66,43 @@ export default function ProfileModal({
         }
 
         try {
-            const response = await UserService.updateProfile(data);
+            // First, upload the profile picture if provided
+            let profilePictureUrl = null;
+            if (formData.profile_picture instanceof File) {
+                const formDataForUpload = new FormData();
+                formDataForUpload.append(
+                    "profile_picture",
+                    formData.profile_picture
+                );
 
-            // Get the updated user data from response
-            const updatedUser = response.data.user;
+                // Upload to Vercel Blob API endpoint
+                const uploadResponse = await fetch("/api/upload-avatar", {
+                    method: "POST",
+                    body: formDataForUpload,
+                });
+
+                const uploadResult = await uploadResponse.json();
+                if (!uploadResponse.ok) {
+                    throw new Error(
+                        uploadResult.error || "Failed to upload image"
+                    );
+                }
+
+                profilePictureUrl = uploadResult.url;
+            }
+
+            // Then, update the user profile
+            const response = await UserService.updateProfile({
+                name: formData.name,
+                bio: formData.bio,
+                profile_picture_url: profilePictureUrl, // Send the URL instead of file
+            });
 
             setSuccessMessage("Profile updated successfully!");
 
             // Call the callback with updated user data
-            if (onProfileUpdate && updatedUser) {
-                onProfileUpdate(updatedUser);
+            if (onProfileUpdate && response.data.user) {
+                onProfileUpdate(response.data.user);
             }
 
             setTimeout(() => {

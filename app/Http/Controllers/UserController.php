@@ -28,23 +28,14 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048',
+            'profile_picture_url' => 'nullable|url', // Now we expect a URL instead of a file
             'bio' => 'nullable|string',
         ]);
 
-        if ($request->hasFile('profile_picture')) {
-            // Delete the old profile picture if it exists
-            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-                Storage::disk('public')->delete($user->profile_picture);
-            }
-
-            // Store the new profile picture
-            $profileImage = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $user->profile_picture = $profileImage;
-        }
-
+        // Update the user with the provided data
         $user->update([
             'name' => $request->name ?? $user->name,
+            'profile_picture' => $request->profile_picture_url ?? $user->profile_picture,
             'bio' => $request->bio ?? $user->bio,
         ]);
 
