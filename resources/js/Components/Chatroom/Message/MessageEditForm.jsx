@@ -42,7 +42,7 @@ export function MessageEditForm({
                     </button>
                     <button
                         onClick={handleSaveEdit}
-                        className="text-save hover:text-happy-blue"
+                        className="text-medsea hover:text-happy-blue"
                         disabled={isSubmittingEdit}
                     >
                         {isSubmittingEdit ? "Saving..." : "Save"}

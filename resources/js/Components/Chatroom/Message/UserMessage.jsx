@@ -147,14 +147,14 @@ export function UserMessage({
                 {/* Message content */}
                 <div
                     className={`mx-3 p-3 rounded-lg shadow-sm ${
-                        isMyMessage ? "bg-indigo-100" : "bg-white"
+                        isMyMessage ? "bg-indigo-100" : "bg-tea"
                     } max-w-md break-words`}
                     onContextMenu={isMyMessage ? handleRightClick : undefined}
                     {...(isMyMessage ? longPressEvent : {})}
                 >
                     {/* Only show name for other users' messages */}
                     {!isMyMessage && (
-                        <p className="text-xs text-gray-500 mb-1">
+                        <p className="text-xs font-semibold text-killer mb-1">
                             {displayName}
                         </p>
                     )}
