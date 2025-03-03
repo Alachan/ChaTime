@@ -9,11 +9,20 @@ import useLongPress from "@/Hooks/useLongPress";
 import ConfirmationModal from "@/Components/Modals/ConfirmationModal";
 import ChatService from "@/Services/ChatService";
 
-export default function MessageBubble({ message, currentUser, onMessageDeleted }) {
+export default function MessageBubble({
+    message,
+    currentUser,
+    onMessageDeleted,
+    onMessageEdited,
+}) {
     const [contextMenu, setContextMenu] = useState(null);
+    const messageRef = useRef(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const messageRef = useRef(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState("");
+    const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+    const editInputRef = useRef(null);
 
     // First check if this is a system message
     if (message.message_type && message.message_type !== "user") {
@@ -89,11 +98,65 @@ export default function MessageBubble({ message, currentUser, onMessageDeleted }
         closeContextMenu();
     };
 
-    // Handle Edit Message (to be implemented)
+    // Handle Edit Message
     const handleEditMessage = () => {
         closeContextMenu();
-        // Edit functionality would go here
-        // For now, just close the menu
+        setEditContent(message.message);
+        setIsEditing(true);
+
+        // Focus the edit input after it's rendered
+        setTimeout(() => {
+            if (editInputRef.current) {
+                editInputRef.current.focus();
+                // Position cursor at the end
+                editInputRef.current.selectionStart =
+                    editInputRef.current.value.length;
+            }
+        }, 0);
+    };
+
+    // Handle save edit
+    const handleSaveEdit = async () => {
+        // Don't submit if the content is empty or hasn't changed
+        if (!editContent.trim() || editContent === message.message) {
+            setIsEditing(false);
+            return;
+        }
+
+        setIsSubmittingEdit(true);
+
+        try {
+            const response = await ChatService.editMessage(
+                message.id,
+                editContent
+            );
+
+            if (onMessageEdited) {
+                onMessageEdited(response.data);
+            }
+        } catch (error) {
+            console.error("Error editing message:", error);
+            // Show error notification if needed
+        } finally {
+            setIsSubmittingEdit(false);
+            setIsEditing(false);
+        }
+    };
+
+    // Handle cancel edit
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setEditContent("");
+    };
+
+    // Handle keyboard events in edit input
+    const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+            handleCancelEdit();
+        } else if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSaveEdit();
+        }
     };
 
     // Get the user from message.user or use a placeholder
@@ -114,7 +177,15 @@ export default function MessageBubble({ message, currentUser, onMessageDeleted }
         showDeleteConfirm,
         setShowDeleteConfirm,
         handleDeleteMessage,
-        isDeleting
+        isDeleting,
+        isEditing,
+        editContent,
+        setEditContent,
+        handleSaveEdit,
+        handleCancelEdit,
+        handleKeyDown,
+        editInputRef,
+        isSubmittingEdit
     );
 }
 
@@ -170,7 +241,15 @@ function renderUserMessage(
     showDeleteConfirm,
     setShowDeleteConfirm,
     handleDeleteMessage,
-    isDeleting
+    isDeleting,
+    isEditing,
+    editContent,
+    setEditContent,
+    handleSaveEdit,
+    handleCancelEdit,
+    handleKeyDown,
+    editInputRef,
+    isSubmittingEdit
 ) {
     // Create a fallback display name for when user data is missing
     const displayName =
@@ -217,18 +296,64 @@ function renderUserMessage(
                         </p>
                     )}
 
-                    {/* Using safe HTML for formatted message text */}
-                    <div
-                        className="overflow-hidden overflow-wrap-anywhere break-words"
-                        dangerouslySetInnerHTML={{
-                            __html: formatMessageText(message.message),
-                        }}
-                    />
+                    {/* Edit mode */}
+                    {isEditing ? (
+                        <div className="flex flex-col">
+                            <textarea
+                                ref={editInputRef}
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                className="w-full px-2 py-1 border rounded text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                rows={Math.max(
+                                    1,
+                                    (editContent.match(/\n/g) || []).length + 1
+                                )}
+                            />
+                            <div className="flex justify-between text-xs">
+                                <div className="text-gray-500">
+                                    <span>Esc to cancel</span> |{" "}
+                                    <span>Enter to save</span>
+                                </div>
+                                <div className="flex space-x-1 ml-2">
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        className="text-gray-pink hover:text-moderate-blue"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="text-save hover:text-happy-blue"
+                                        disabled={
+                                            isSubmittingEdit ||
+                                            !editContent.trim() ||
+                                            editContent === message.message
+                                        }
+                                    >
+                                        {isSubmittingEdit
+                                            ? "Saving..."
+                                            : "Save"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Regular message content */}
+                            <div
+                                className="overflow-hidden overflow-wrap-anywhere break-words"
+                                dangerouslySetInnerHTML={{
+                                    __html: formatMessageText(message.message),
+                                }}
+                            />
 
-                    <p className="text-xs text-gray-500 text-right mt-1">
-                        {formatMessageTime(message.sent_at)}
-                        {message.edited_at && " (edited)"}
-                    </p>
+                            <p className="text-xs text-gray-500 text-right mt-1">
+                                {formatMessageTime(message.sent_at)}
+                                {message.edited_at && " (edited)"}
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* Only show your avatar on the right */}

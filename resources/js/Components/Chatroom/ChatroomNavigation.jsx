@@ -3,7 +3,7 @@
  */
 export default function ChatroomNavigation({ onBackClick, onLeaveChatroom }) {
     return (
-        <div className="bg-mute py-1 px-4 text-sm border-b flex items-center justify-between">
+        <div className="bg-light-cyan py-1 px-4 text-sm border-b flex items-center justify-between">
             <button
                 onClick={onBackClick}
                 className="text-indigo-600 hover:text-indigo-800 flex items-center"

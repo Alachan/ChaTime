@@ -123,28 +123,69 @@ class MessageController extends Controller
 
     public function editMessage(Request $request, $id)
     {
-        $message = Message::findOrFail($id);
+        try {
+            $request->validate([
+                'message' => 'required|string|max:10000',
+            ]);
 
-        $message->update([
-            'message' => $request->message,
-            'edited_at' => now(),
-        ]);
+            $message = Message::findOrFail($id);
 
-        broadcast(new MessageEdited($message))->toOthers();
+            // Check if the authenticated user is the owner of this message
+            if ($message->user_id !== Auth::id()) {
+                return response()->json(['error' => 'You can only edit your own messages'], 403);
+            }
 
-        return response()->json($message);
+            // Check if message is system or admin type (can't be edited)
+            if ($message->message_type !== 'user' && $message->message_type !== null) {
+                return response()->json(['error' => 'System messages cannot be edited'], 403);
+            }
+
+            // Update the message
+            $message->message = $request->message;
+            $message->edited_at = now();
+            $message->save();
+
+            // Broadcast the edit event to others
+            broadcast(new MessageEdited($message, $message->chat_room_id))->toOthers();
+
+            return response()->json([
+                'id' => $message->id,
+                'message' => $message->message,
+                'edited_at' => $message->edited_at->toIso8601String()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Message edit error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'message_id' => $id
+            ]);
+
+            return response()->json(['error' => 'Failed to edit message: ' . $e->getMessage()], 500);
+        }
     }
 
     public function deleteMessage($id)
     {
-        $message = Message::findOrFail($id);
+        try {
+            $message = Message::findOrFail($id);
 
-        $chatRoomId = $message->chat_room_id;
-        $message->delete();
+            $chatRoomId = $message->chat_room_id;
+            $message->delete();
 
-        broadcast(new MessageDeleted($id, $chatRoomId))->toOthers();
+            broadcast(new MessageDeleted((int) $id, $chatRoomId))->toOthers();
 
-        return response()->json(['message' => 'Deleted successfully']);
+            return response()->json(['message' => 'Deleted successfully']);
+        } catch (\Exception $e) {
+            Log::error('Message delete error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'message_id' => $id
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to delete message: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

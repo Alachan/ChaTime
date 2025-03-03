@@ -14,8 +14,9 @@ export default function MessageArea({
     user,
     typingText,
     messageEndRef,
-    listRef,
+    areaRef,
     onMessageDeleted,
+    onMessageEdited,
 }) {
     // Group messages by date
     const groupedMessages = messages.reduce((grouped, message) => {
@@ -47,7 +48,7 @@ export default function MessageArea({
     }, []);
 
     return (
-        <div ref={listRef} className="flex-1 bg-gray-50 p-4 overflow-y-auto">
+        <div ref={areaRef} className="flex-1 bg-gray-50 p-4 overflow-y-auto">
             {/* Historical messages toggle */}
             {hasMoreMessages || showHistorical ? (
                 <div className="text-center mb-2">
@@ -105,6 +106,7 @@ export default function MessageArea({
                                         message={message}
                                         currentUser={user}
                                         onMessageDeleted={onMessageDeleted}
+                                        onMessageEdited={onMessageEdited}
                                     />
                                 ))}
                         </div>

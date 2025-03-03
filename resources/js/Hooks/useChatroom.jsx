@@ -180,6 +180,20 @@ export default function useChatRoom(chatroom, user) {
         );
     };
 
+    const handleLocalMessageEdit = (message) => {
+        setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+                msg.id === message.id
+                    ? {
+                          ...msg,
+                          message: message.message,
+                          edited_at: message.edited_at,
+                      }
+                    : msg
+            )
+        );
+    };
+
     // Set up real-time event listeners
     useEffect(() => {
         if (!chatroom?.id || !window.Echo) return;
@@ -263,7 +277,7 @@ export default function useChatRoom(chatroom, user) {
             console.log("Message deleted event received:", e);
 
             setMessages((prevMessages) =>
-                prevMessages.filter((msg) => msg.id !== Number(e.id))
+                prevMessages.filter((msg) => msg.id !== e.id)
             );
         });
 
@@ -304,6 +318,7 @@ export default function useChatRoom(chatroom, user) {
         handleKeyDown,
 
         handleLocalMessageDelete,
+        handleLocalMessageEdit,
 
         // Display helpers
         typingText,
