@@ -40,7 +40,7 @@ export default function Login() {
             <header className="w-full px-6 py-4 flex justify-center md:justify-start z-[10]">
                 <div className="md:ml-8 md:py-4">
                     <img
-                        src="/logo.png"
+                        src="/images/logo.png"
                         alt="ChaTime Logo"
                         className="h-12 w-auto"
                     />

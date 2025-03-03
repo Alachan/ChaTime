@@ -39,7 +39,7 @@ export default function SakuraEffect() {
             {petals.map((petal) => (
                 <img
                     key={petal.id}
-                    src="/sakura.png"
+                    src="/images/sakura.png"
                     alt="Sakura Petal"
                     className={`absolute animate-fall`}
                     style={{
