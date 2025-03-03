@@ -8,7 +8,7 @@ ChaTime is a modern chat platform that combines the comfort of tea culture with 
 
 ## ✨ Key Features
 
-- **Real-time messaging** using Laravel WebSockets
+- **Real-time messaging** using Laravel Reverb
 - **User authentication** with Laravel Sanctum
 - **Public and private chatrooms** with password protection
 - **Message management**: edit, delete, and view historical messages
@@ -22,7 +22,7 @@ ChaTime is a modern chat platform that combines the comfort of tea culture with 
 
 - **Backend**: Laravel, PHP, MySQL
 - **Frontend**: React, TailwindCSS, Framer Motion
-- **Real-time Communication**: Laravel Echo, WebSockets
+- **Real-time Communication**: Laravel Echo, Reverb
 - **Authentication**: Laravel Sanctum with token-based auth
 - **State Management**: React Hooks and Context API
 
@@ -103,7 +103,7 @@ npm run dev
 
 8. Start the WebSocket server
 ```bash
-php artisan websockets:serve
+php artisan reverb:start
 ```
 
 ## 🔒 Security Features
