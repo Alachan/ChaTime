@@ -19,7 +19,11 @@ export default {
             colors: {
                 primary: "#344e41", //
                 secondary: "#4a4e69",
-                mute: "#edf6f9",
+                save: "#168aad",
+                "happy-blue": "#00a6fb",
+                "light-cyan": "#edf6f9",
+                "gray-pink": "#9d8189",
+                "moderate-blue": "#415a77",
             },
         },
     },

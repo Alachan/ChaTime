@@ -15,9 +15,12 @@ class MessageEdited implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $message;
+    public $chatRoomId;
 
-    public function __construct($message) {
+    public function __construct($message, $chatRoomId)
+    {
         $this->message = $message;
+        $this->chatRoomId = $chatRoomId;
     }
 
     /**
@@ -28,15 +31,16 @@ class MessageEdited implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chatroom-' . $this->message->chat_room_id),
+            new PrivateChannel('chatroom-' . $this->chatRoomId),
         ];
     }
 
     public function broadcastWith() {
+
         return [
             'id' => $this->message->id,
             'message' => $this->message->message,
-            'edited_at' => $this->message->edited_at,
+            'edited_at' => $this->message->edited_at->toIso8601String()
         ];
     }
 }
