@@ -17,7 +17,13 @@ return [
 
     'allowed_methods' => ['*'], // Allow all request methods (GET, POST, PUT, DELETE, etc.)
 
-    'allowed_origins' => ['http://127.0.0.1:8000', 'http://127.0.0.1:8001', 'http://localhost:5173'], // Add Vite's dev server if using it
+    'allowed_origins' => [
+        'http://127.0.0.1:8000',
+        'http://127.0.0.1:8001',
+        'http://localhost:5173',
+        'https://cha-time.vercel.app',
+        'https://*.pusher.com'
+    ], // Add Vite's dev server if using it
 
     'allowed_origins_patterns' => [],
 

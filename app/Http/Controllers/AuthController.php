@@ -37,9 +37,9 @@ class AuthController extends Controller
                 $token,           // Cookie value
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
-                '.127.0.0.1',             // Domain (null = current domain)
-                false,            // Secure (set to false for testing)
-                false,            // HttpOnly (set to false for testing)
+                null,     // Domain (null = current domain)
+                true, // Change to true for HTTPS
+                true, // Change to true for security
                 false,            // Raw
                 'lax'             // SameSite
             );
@@ -97,9 +97,9 @@ class AuthController extends Controller
                 $token,           // Cookie value
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
-                '.127.0.0.1',             // Domain (null = current domain)
-                false,            // Secure (set to false for testing)
-                false,            // HttpOnly (set to false for testing)
+                null,             // Domain (null = current domain)
+                true, // Change to true for HTTPS
+                true, // Change to true for security
                 false,            // Raw
                 'lax'             // SameSite
             );
