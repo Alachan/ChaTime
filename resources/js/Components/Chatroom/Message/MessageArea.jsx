@@ -1,3 +1,4 @@
+import { memo } from "react";
 import MessageBubble from "./MessageBubble";
 import { formatRelativeTime } from "@/Utils/formatter";
 
@@ -18,6 +19,8 @@ export default function MessageArea({
     onMessageDeleted,
     onMessageEdited,
 }) {
+    const MemoizedMessageBubble = memo(MessageBubble);
+
     // Group messages by date
     const groupedMessages = messages.reduce((grouped, message) => {
         // Get the date for the message
@@ -101,7 +104,7 @@ export default function MessageArea({
                             {/* For date groups, render all messages */}
                             {group.type === "date" &&
                                 group.messages.map((message) => (
-                                    <MessageBubble
+                                    <MemoizedMessageBubble
                                         key={message.id}
                                         message={message}
                                         currentUser={user}

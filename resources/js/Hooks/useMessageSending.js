@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import ChatService from "@/Services/ChatService";
 
-export function useMessageSending(chatRoomId, addMessageToState) {
+export function useMessageSending(chatRoomId, userId, addMessageToState) {
     const [inputMessage, setInputMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const typingTimeoutRef = useRef(null);

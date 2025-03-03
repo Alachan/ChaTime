@@ -39,58 +39,67 @@ class ChatRoomController extends Controller
 
     public function createChatRoom(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'password' => 'nullable|string|min:6',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'password' => 'nullable|string|min:6',
+            ]);
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        $chatRoomData = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'created_by' => $user->id,
-            'is_private' => !empty($request->password), // Set is_private based on password presence
-            'last_message_at' => now(),
-        ];
+            $chatRoomData = [
+                'name' => $request->name,
+                'description' => $request->description,
+                'created_by' => $user->id,
+                'is_private' => !empty($request->password), // Set is_private based on password presence
+                'last_message_at' => now(),
+            ];
 
-        // Hash password if provided
-        if ($request->password) {
-            $chatRoomData['password'] = bcrypt($request->password);
+            // Hash password if provided
+            if ($request->password) {
+                $chatRoomData['password'] = bcrypt($request->password);
+            }
+
+            $chatRoom = ChatRoom::create($chatRoomData);
+
+            // Add the creator as a participant
+            $chatRoom->participants()->attach($user->id);
+
+            // Create a system message that the room was created
+            SystemMessageService::adminMessage(
+                $chatRoom->id,
+                "Chatroom \"{$chatRoom->name}\" created by {$user->username}!",
+                $user,
+            );
+
+            // Manually load the creator relationship and participant count
+            $chatRoom->load('creator:id,name,username');
+            $chatRoom->loadCount('participants as member_count');
+
+            // Broadcast to creator
+            broadcast(new PersonalNotification(
+                $user->id,
+                'success',
+                'You successfully created the chatroom ' . $chatRoom->name . '!',
+                [
+                    'action' => 'created',
+                    'chatroom' => $chatRoom->toArray()
+                ]
+            ));
+
+            return response()->json([
+                'message' => 'Chatroom created successfully',
+                'chatroom' => $chatRoom
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error creating chatroom', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Failed to create chatroom. Please try again.'], 500);
         }
-
-        $chatRoom = ChatRoom::create($chatRoomData);
-
-        // Add the creator as a participant
-        $chatRoom->participants()->attach($user->id);
-
-        // Create a system message that the room was created
-        SystemMessageService::adminMessage(
-            $chatRoom->id,
-            "Chatroom \"{$chatRoom->name}\" created by {$user->username}!",
-            $user,
-        );
-
-        // Manually load the creator relationship and participant count
-        $chatRoom->load('creator:id,name,username');
-        $chatRoom->loadCount('participants as member_count');
-
-        // Broadcast to creator
-        broadcast(new PersonalNotification(
-            $user->id,
-            'success',
-            'You successfully created the chatroom ' . $chatRoom->name . '!',
-            [
-                'action' => 'created',
-                'chatroom' => $chatRoom->toArray()
-            ]
-        ));
-
-        return response()->json([
-            'message' => 'Chatroom created successfully',
-            'chatroom' => $chatRoom
-        ]);
     }
 
     public function userTyping(Request $request)
@@ -104,51 +113,60 @@ class ChatRoomController extends Controller
 
     public function joinChatRoom(Request $request)
     {
-        $user = Auth::user();
-        $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
+        try {
+            $user = Auth::user();
+            $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
 
-        if ($chatRoom->is_private && !password_verify($request->password, $chatRoom->password)) {
-            return response()->json(['error' => 'Incorrect password'], 403);
+            if ($chatRoom->is_private && !password_verify($request->password, $chatRoom->password)) {
+                return response()->json(['error' => 'Incorrect password'], 403);
+            }
+
+            // Check if user is already a member to avoid duplicate events
+            $alreadyJoined = $chatRoom->participants()->where('user_id', $user->id)->exists();
+
+            if (!$alreadyJoined) {
+                // Add user to participants
+                $chatRoom->participants()->attach($user->id);
+
+                // Get updated chat room with member count
+                $chatRoom->refresh();
+                $chatRoom->loadCount('participants as member_count');
+
+                // Create system message for user join
+                SystemMessageService::userJoined($chatRoom->id, $user);
+
+                // Create welcome message for the new user (only visible to them)
+                SystemMessageService::welcomeUser($chatRoom->id, $user, false);
+
+
+                // Broadcast to other members
+                broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
+
+                // Personal notification to the user
+                broadcast(new PersonalNotification(
+                    $user->id,
+                    'success',
+                    'You joined chatroom: ' . $chatRoom->name . ' successfully!',
+                    [
+                        'action' => 'joined',
+                        'chatroom' => $chatRoom->toArray()
+                    ]
+                ));
+            }
+
+            // Return the updated chat room data
+            return response()->json([
+                'message' => "{$user->username} joined the chat",
+                'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error joining chatroom', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['error' => 'Failed to join chatroom. Please try again.'], 500);
         }
-
-        // Check if user is already a member to avoid duplicate events
-        $alreadyJoined = $chatRoom->participants()->where('user_id', $user->id)->exists();
-
-        if (!$alreadyJoined) {
-            // Add user to participants
-            $chatRoom->participants()->attach($user->id);
-
-            // Get updated chat room with member count
-            $chatRoom->refresh();
-            $chatRoom->loadCount('participants as member_count');
-
-            // Create system message for user join
-            SystemMessageService::userJoined($chatRoom->id, $user);
-
-            // Create welcome message for the new user (only visible to them)
-            SystemMessageService::welcomeUser($chatRoom->id, $user, false);
-
-
-            // Broadcast to other members
-            broadcast(new UserJoinedChat($user->id, $chatRoom->id))->toOthers();
-
-            // Personal notification to the user
-            broadcast(new PersonalNotification(
-                $user->id,
-                'success',
-                'You joined chatroom: ' . $chatRoom->name . ' successfully!',
-                [
-                    'action' => 'joined',
-                    'chatroom' => $chatRoom->toArray()
-                ]
-            ));
-        }
-
-        // Return the updated chat room data
-        return response()->json([
-            'message' => "{$user->username} joined the chat",
-            'chatroom' => $chatRoom->load('creator:id,name,username')->loadCount('participants as member_count')
-        ]);
     }
 
     public function leaveChatRoom(Request $request)

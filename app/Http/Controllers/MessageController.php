@@ -101,12 +101,21 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         try {
+            $request->validate([
+                'chat_room_id' => 'required|exists:chat_rooms,id',
+                'message' => 'required|string|max:10000',
+            ]);
+
             $message = Message::create([
                 'user_id' => Auth::id(),
                 'chat_room_id' => $request->chat_room_id,
                 'message' => $request->message,
                 'sent_at' => now(),
             ]);
+
+            // Update the last message timestamp
+            $chatRoom = ChatRoom::findOrFail($request->chat_room_id);
+            $chatRoom->update(['last_message_at' => now()]);
 
             broadcast(new MessageSent($message))->toOthers();
 
@@ -145,6 +154,10 @@ class MessageController extends Controller
             $message->edited_at = now();
             $message->save();
 
+            // Update the last message timestamp
+            $chatRoom = $message->chatRoom;
+            $chatRoom->update(['last_message_at' => now()]);
+
             // Broadcast the edit event to others
             broadcast(new MessageEdited($message, $message->chat_room_id))->toOthers();
 
@@ -170,6 +183,12 @@ class MessageController extends Controller
             $message = Message::findOrFail($id);
 
             $chatRoomId = $message->chat_room_id;
+
+            // Check if the authenticated user is the owner of this message
+            if ($message->user_id !== Auth::id()) {
+                return response()->json(['error' => 'You can only delete your own messages'], 403);
+            }
+
             $message->delete();
 
             broadcast(new MessageDeleted((int) $id, $chatRoomId))->toOthers();
