@@ -51,7 +51,7 @@ export default {
      * @returns {Promise} - API response with user and token
      */
     register(userData) {
-        return axios.post("/api/logout", userData, {
+        return axios.post("/api/register", userData, {
             withCredentials: true,
         });
     },
