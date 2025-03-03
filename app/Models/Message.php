@@ -17,15 +17,13 @@ class Message extends Model
         'user_id',
         'chat_room_id',
         'message',
-        'message_type', // New column
-        'is_read',
+        'message_type',
         'sent_at',
         'edited_at',
     ];
 
     // The attributes that should be cast to native types.
     protected $casts = [
-        'is_read' => 'boolean',
         'sent_at' => 'datetime',
         'edited_at' => 'datetime',
     ];

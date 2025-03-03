@@ -92,7 +92,12 @@ export default function ProfileModal({
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) {
+        if (errorMessage) {
+            setErrorMessage("");
+        }
+        return null;
+    }
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
