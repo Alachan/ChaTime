@@ -39,7 +39,7 @@ export default {
      * @returns {Promise} - API response with user and token
      */
     login(credentials) {
-        return axios.post(route("api.login"), credentials, {
+        return axios.post("/api/login", credentials, {
             withCredentials: true,
         });
     },
@@ -51,7 +51,7 @@ export default {
      * @returns {Promise} - API response with user and token
      */
     register(userData) {
-        return axios.post(route("api.register"), userData, {
+        return axios.post("/api/logout", userData, {
             withCredentials: true,
         });
     },
