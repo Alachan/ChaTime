@@ -32,7 +32,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(append: [
-            EncryptCookies::class,
             AddQueuedCookiesToResponse::class, // Ensure cookies are sent back
             StartSession::class, // Ensure session is available
             EnsureFrontendRequestsAreStateful::class,
@@ -42,7 +41,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
