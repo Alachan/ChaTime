@@ -30,13 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
+            HandleTokenAuthentication::class,
         ]);
 
         $middleware->api(append: [
-            EncryptCookies::class,
-            AddQueuedCookiesToResponse::class,
-            StartSession::class,
-            ShareErrorsFromSession::class,
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
@@ -49,7 +46,6 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,  // Ensure session is started first
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,  // CSRF token check should come after session
-            HandleTokenAuthentication::class,
             SubstituteBindings::class,
         ]);
 
