@@ -15,7 +15,7 @@ use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\EncryptCookies;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 
 
 return Application::configure(basePath: dirname(__DIR__))
