@@ -54,29 +54,44 @@ export default function ProfileModal({
     };
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage("");
+        setSuccessMessage("");
         try {
             // Upload profile picture if provided
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
-                // Create a simpler form data with just the file
-                const fileData = new FormData();
-                fileData.append("file", formData.profile_picture);
+                try {
+                    // Create a reader to get the file as ArrayBuffer
+                    const arrayBuffer =
+                        await formData.profile_picture.arrayBuffer();
 
-                // Direct fetch to the blob API route
-                const uploadResponse = await fetch("/api/blob", {
-                    method: "POST",
-                    body: fileData,
-                });
+                    // Convert to regular Buffer
+                    const buffer = Buffer.from(arrayBuffer);
 
-                if (!uploadResponse.ok) {
-                    throw new Error(`Upload failed: ${uploadResponse.status}`);
+                    // Send raw binary data to the upload endpoint
+                    const response = await fetch("/api/upload", {
+                        method: "POST",
+                        body: buffer,
+                        headers: {
+                            "Content-Type": "application/octet-stream",
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    profilePictureUrl = result.url;
+                } catch (error) {
+                    console.error("Error uploading image:", error);
+                    throw new Error("Failed to upload profile picture");
                 }
-
-                const uploadResult = await uploadResponse.json();
-                profilePictureUrl = uploadResult.url;
             }
 
-            // Update the user profile with the image URL
+            // Only after successful image upload (if needed), update the profile
             const response = await UserService.updateProfile({
                 name: formData.name,
                 bio: formData.bio,
