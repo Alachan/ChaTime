@@ -33,7 +33,7 @@ export default {
      * @returns {Promise} - API response
      */
     createChatroom({ name, description, password = null }) {
-        return axios.post(`${getApiPrefix()}chatrooms`, {
+        return axios.post(`${getApiPrefix()}/chatrooms`, {
             name,
             description,
             password,
