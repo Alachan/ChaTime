@@ -19,13 +19,14 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, ...$guards)
     {
-        $guards = empty($guards) ? [null] : $guards;
+        // Explicitly check common guards (session-based & token-based)
+        $guards = empty($guards) ? ['sanctum', 'api', null] : $guards;
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // User is logged in, redirect to Teahub
                 Log::info('Redirecting authenticated user from auth pages', [
-                    'user_id' => Auth::id(),
+                    'user_id' => Auth::guard($guard)->id(),
+                    'guard' => $guard,
                     'from' => $request->path(),
                     'to' => '/teahub'
                 ]);
