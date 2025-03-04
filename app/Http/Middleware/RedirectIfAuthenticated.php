@@ -23,11 +23,11 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // User is logged in, redirect to ChatSpace
+                // User is logged in, redirect to Teahub
                 Log::info('Redirecting authenticated user from auth pages', [
                     'user_id' => Auth::id(),
                     'from' => $request->path(),
-                    'to' => '/chatspace'
+                    'to' => '/teahub'
                 ]);
 
                 if ($request->expectsJson()) {
