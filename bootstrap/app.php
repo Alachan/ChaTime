@@ -13,9 +13,9 @@ use \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\HandleInertiaRequests;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(append: [
+            EncryptCookies::class,
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
