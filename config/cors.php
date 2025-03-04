@@ -22,6 +22,7 @@ return [
         'http://127.0.0.1:8001',
         'http://localhost:5173',
         'https://cha-time.vercel.app',
+        'https://*.vercel.app',
         'https://*.pusher.com'
     ], // Add Vite's dev server if using it
 
