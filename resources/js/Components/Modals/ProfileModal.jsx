@@ -67,7 +67,7 @@ export default function ProfileModal({
                 formDataForUpload.append("file", formData.profile_picture);
 
                 // Upload to your blob endpoint
-                const response = await fetch("/api/avatar-upload", {
+                const response = await fetch("/api/blob, {
                     method: "POST",
                     body: formDataForUpload,
                 });

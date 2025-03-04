@@ -7,6 +7,10 @@
         }
     },
     "routes": [
+        {
+            "src": "/api/blob",
+            "dest": "/api/blob.js"
+        },
         { "src": "/build/(.*)", "dest": "/public/build/$1" },
         {
             "src": "/(.*\\.(png|jpg|jpeg|gif|ico|svg|webp))",
