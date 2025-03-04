@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->api(append: [
             EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
