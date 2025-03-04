@@ -50,12 +50,15 @@ class AuthController extends Controller
                 'cookie_created' => !empty($cookie)
             ]);
 
-            return response()
-                ->json([
-                    'user' => $user,
-                    'token' => $token,
-                ])
-                ->cookie($cookie);
+            // Manually set the cookie in the response header
+            $response = response()->json([
+                'user' => $user,
+                'token' => $token,
+            ]);
+
+            $response->headers->set('Set-Cookie', "auth_token=$token; Path=/; HttpOnly; SameSite=Lax; Secure");
+
+            return $response;
         } catch (ValidationException $e) {
             // Re-throw validation exceptions to be handled by Laravel's validator
             throw $e;
@@ -110,12 +113,15 @@ class AuthController extends Controller
                 'cookie_created' => !empty($cookie)
             ]);
 
-            return response()
-                ->json([
-                    'user' => $user,
-                    'token' => $token,
-                ])
-                ->cookie($cookie);
+            // Manually set the cookie in the response header
+            $response = response()->json([
+                'user' => $user,
+                'token' => $token,
+            ]);
+
+            $response->headers->set('Set-Cookie', "auth_token=$token; Path=/; HttpOnly; SameSite=Lax; Secure");
+
+            return $response;
         } catch (ValidationException $e) {
             // Re-throw validation exceptions to be handled by Laravel's validator
             throw $e;
