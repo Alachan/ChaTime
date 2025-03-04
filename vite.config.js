@@ -11,7 +11,9 @@ export default defineConfig({
         react(),
     ],
     build: {
+        // Set the correct output directory and assets path
         outDir: "public/build",
+        assetsDir: "assets",
     },
     base:
         process.env.APP_ENV === "production"
