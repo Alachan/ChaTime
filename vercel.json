@@ -31,5 +31,10 @@
         "CACHE_DRIVER": "array",
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie"
+    },
+    "build": {
+        "env": {
+            "VERCEL_BUILD_SCRIPT": "php artisan route:clear && php artisan config:clear"
+        }
     }
 }
