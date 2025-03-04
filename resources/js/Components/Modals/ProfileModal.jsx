@@ -54,34 +54,29 @@ export default function ProfileModal({
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setErrorMessage("");
-        setSuccessMessage("");
-
         try {
             // Upload profile picture if provided
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
-                const formDataForUpload = new FormData();
-                formDataForUpload.append("file", formData.profile_picture);
+                // Create a simpler form data with just the file
+                const fileData = new FormData();
+                fileData.append("file", formData.profile_picture);
 
-                // Upload to your blob endpoint
-                const response = await fetch("/api/blob, {
+                // Direct fetch to the blob API route
+                const uploadResponse = await fetch("/api/blob", {
                     method: "POST",
-                    body: formDataForUpload,
+                    body: fileData,
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Failed to upload file");
+                if (!uploadResponse.ok) {
+                    throw new Error(`Upload failed: ${uploadResponse.status}`);
                 }
 
-                const blob = await response.json();
-                profilePictureUrl = blob.url;
+                const uploadResult = await uploadResponse.json();
+                profilePictureUrl = uploadResult.url;
             }
 
-            // Update the user profile with the URL
+            // Update the user profile with the image URL
             const response = await UserService.updateProfile({
                 name: formData.name,
                 bio: formData.bio,
@@ -100,11 +95,7 @@ export default function ProfileModal({
             }, 500);
         } catch (error) {
             console.error("Error updating profile:", error);
-            setErrorMessage(
-                error.message ||
-                    error.response?.data?.message ||
-                    "Failed to update profile"
-            );
+            setErrorMessage(error.message || "Failed to update profile");
         } finally {
             setIsLoading(false);
         }
