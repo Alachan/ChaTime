@@ -20,7 +20,7 @@ class RedirectIfAuthenticated
     public function handle(Request $request, Closure $next, ...$guards)
     {
         // Explicitly check common guards (session-based & token-based)
-        $guards = empty($guards) ? ['sanctum', 'api', null] : $guards;
+        $guards = empty($guards) ? ['sanctum', null] : $guards;
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
