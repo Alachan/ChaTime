@@ -37,7 +37,7 @@ class AuthController extends Controller
                 $token,           // Cookie value
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
-                null,     // Domain (null = current domain)
+                env('COOKIE_DOMAIN', null),     // Domain (null = current domain)
                 request()->secure(), // Change to true for HTTPS
                 true, // Change to true for security
                 false,            // Raw
@@ -97,7 +97,7 @@ class AuthController extends Controller
                 $token,           // Cookie value
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
-                null,             // Domain (null = current domain)
+                env('COOKIE_DOMAIN', null),  // Domain (null = current domain)
                 request()->secure(), // Change to true for HTTPS
                 true, // Change to true for security
                 false,            // Raw
