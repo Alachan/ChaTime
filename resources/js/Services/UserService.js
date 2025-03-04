@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { getApiPrefix } from "@/Utils/formatter";
 /**
  * Service for handling all user-related API requests
  */
