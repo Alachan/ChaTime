@@ -214,3 +214,15 @@ export function getNotificationIcon(type) {
             return "📢";
     }
 }
+
+export function getApiPrefix() {
+    // Check if we're in production on Vercel
+    if (
+        window.location.hostname.includes("vercel.app") ||
+        process.env.NODE_ENV === "production"
+    ) {
+        return "/api/api";
+    }
+    // Local development
+    return "/api";
+}

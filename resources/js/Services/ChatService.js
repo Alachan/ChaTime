@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getApiPrefix } from "@/Utils/formatter";
 
 /**
  * Service for handling all chat-related API requests
@@ -10,7 +11,7 @@ export default {
      * @returns {Promise} - API response
      */
     getAllChatrooms() {
-        return axios.get("/api/chatrooms");
+        return axios.get(`${getApiPrefix()}/chatrooms`);
     },
 
     /**
@@ -19,7 +20,7 @@ export default {
      * @returns {Promise} - API response
      */
     getJoinedChatrooms() {
-        return axios.get("/api/chatrooms/joined");
+        return axios.get(`${getApiPrefix()}/chatrooms/joined`);
     },
 
     /**
@@ -32,7 +33,7 @@ export default {
      * @returns {Promise} - API response
      */
     createChatroom({ name, description, password = null }) {
-        return axios.post("/api/chatrooms", {
+        return axios.post(`${getApiPrefix()}chatrooms`, {
             name,
             description,
             password,
@@ -47,7 +48,7 @@ export default {
      * @returns {Promise} - API response
      */
     joinChatroom(chatRoomId, password = null) {
-        return axios.post("/api/chatrooms/join", {
+        return axios.post(`${getApiPrefix()}/chatrooms/join`, {
             chat_room_id: chatRoomId,
             password: password,
         });
@@ -60,7 +61,7 @@ export default {
      * @returns {Promise} - API response
      */
     leaveChatroom(chatRoomId) {
-        return axios.post("/api/chatrooms/leave", {
+        return axios.post(`${getApiPrefix()}/chatrooms/leave`, {
             chat_room_id: chatRoomId,
         });
     },
@@ -73,7 +74,9 @@ export default {
      * @returns {Promise} - API response
      */
     getMessages(chatRoomId, params = {}) {
-        return axios.get(`/api/messages/${chatRoomId}`, { params });
+        return axios.get(`${getApiPrefix()}/messages/${chatRoomId}`, {
+            params,
+        });
     },
 
     /**
@@ -84,7 +87,7 @@ export default {
      * @returns {Promise} - API response
      */
     sendMessage(chatRoomId, message) {
-        return axios.post("/api/messages", {
+        return axios.post(`${getApiPrefix()}/messages`, {
             chat_room_id: chatRoomId,
             message,
         });
@@ -98,7 +101,7 @@ export default {
      * @returns {Promise} - API response
      */
     editMessage(messageId, newMessage) {
-        return axios.post(`/api/messages/${messageId}`, {
+        return axios.post(`${getApiPrefix()}/messages/${messageId}`, {
             message: newMessage,
         });
     },
@@ -110,7 +113,7 @@ export default {
      * @returns {Promise} - API response
      */
     deleteMessage(messageId) {
-        return axios.delete(`/api/messages/${messageId}`);
+        return axios.delete(`${getApiPrefix()}/messages/${messageId}`);
     },
 
     /**
@@ -120,7 +123,7 @@ export default {
      * @returns {Promise} - API response
      */
     sendTypingEvent(chatRoomId) {
-        return axios.post("/api/chatrooms/typing", {
+        return axios.post(`${getApiPrefix()}/chatrooms/typing`, {
             chat_room_id: chatRoomId,
         });
     },
