@@ -1,36 +1,33 @@
-import { handleUpload } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 
 export default async function handler(request, response) {
-    try {
-        const body = await request.json();
+    if (request.method !== "POST") {
+        return response.status(405).json({ error: "Method not allowed" });
+    }
 
-        const jsonResponse = await handleUpload({
-            body,
-            request,
-            onBeforeGenerateToken: async (pathname) => {
-                // Here you could add authentication checks
-                return {
-                    allowedContentTypes: [
-                        "image/jpeg",
-                        "image/png",
-                        "image/gif",
-                        "image/webp",
-                    ],
-                    maximumSizeInBytes: 5 * 1024 * 1024, // 5MB
-                    tokenPayload: JSON.stringify({
-                        // You could store user info here if needed
-                    }),
-                };
-            },
-            onUploadCompleted: async ({ blob, tokenPayload }) => {
-                // This won't work locally, but will on Vercel
-                console.log("Upload completed:", blob.url);
-            },
+    try {
+        const form = await request.formData();
+        const file = form.get("file");
+
+        if (!file) {
+            return response
+                .status(400)
+                .json({ error: "No file found in request" });
+        }
+
+        // Create a unique filename with timestamp
+        const filename = `${Date.now()}-${file.name}`;
+
+        // Use Vercel Blob's put function with your token (which is automatically loaded from env)
+        const blob = await put(`profile-pictures/${filename}`, file, {
+            access: "public",
         });
 
-        return response.status(200).json(jsonResponse);
+        return response.status(200).json(blob);
     } catch (error) {
-        console.error("Error in upload handler:", error);
-        return response.status(400).json({ error: error.message });
+        console.error("Error in blob upload:", error);
+        return response
+            .status(500)
+            .json({ error: error.message || "Error uploading file" });
     }
 }

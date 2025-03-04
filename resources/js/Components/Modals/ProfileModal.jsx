@@ -63,32 +63,25 @@ export default function ProfileModal({
             // Upload profile picture if provided
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
-                try {
-                    // Generate a unique filename with the user's ID and timestamp
-                    const fileName = `${user.id}-${Date.now()}-${
-                        formData.profile_picture.name
-                    }`;
+                const formDataForUpload = new FormData();
+                formDataForUpload.append("file", formData.profile_picture);
 
-                    // Upload directly using Vercel Blob client
-                    const blobResult = await upload(
-                        fileName,
-                        formData.profile_picture,
-                        {
-                            access: "public",
-                            handleUploadUrl: "/api/avatar-upload",
-                        }
-                    );
+                // Upload to your blob endpoint
+                const response = await fetch("/api/avatar-upload", {
+                    method: "POST",
+                    body: formDataForUpload,
+                });
 
-                    profilePictureUrl = blobResult.url;
-                } catch (uploadError) {
-                    console.error("Error uploading image:", uploadError);
-                    throw new Error(
-                        "Failed to upload profile picture. Please try again."
-                    );
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to upload file");
                 }
+
+                const blob = await response.json();
+                profilePictureUrl = blob.url;
             }
 
-            // Update the user profile
+            // Update the user profile with the URL
             const response = await UserService.updateProfile({
                 name: formData.name,
                 bio: formData.bio,
@@ -97,7 +90,6 @@ export default function ProfileModal({
 
             setSuccessMessage("Profile updated successfully!");
 
-            // Call the callback with updated user data
             if (onProfileUpdate && response.data.user) {
                 onProfileUpdate(response.data.user);
             }
