@@ -7,26 +7,26 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use App\Http\Middleware\HandleTokenAuthentication;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
-use App\Http\Middleware\EncryptCookies;
-use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Middleware\HandleInertiaRequests;
 
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->use([
+            HandleTokenAuthentication::class,
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
@@ -42,10 +42,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
-            StartSession::class,  // Ensure session is started first
+            StartSession::class,
             ShareErrorsFromSession::class,
-            VerifyCsrfToken::class,  // CSRF token check should come after session
-            HandleTokenAuthentication::class,
+            VerifyCsrfToken::class,
             SubstituteBindings::class,
         ]);
 
