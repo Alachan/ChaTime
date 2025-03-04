@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import UserService from "@/Services/UserService";
+import { upload } from "@vercel/blob/client";
 
 export default function ProfileModal({
     isOpen,
@@ -58,44 +59,40 @@ export default function ProfileModal({
         setErrorMessage("");
         setSuccessMessage("");
 
-        const data = new FormData();
-        data.append("name", formData.name);
-        data.append("bio", formData.bio);
-        if (formData.profile_picture) {
-            data.append("profile_picture", formData.profile_picture);
-        }
-
         try {
-            // First, upload the profile picture if provided
+            // Upload profile picture if provided
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
-                const formDataForUpload = new FormData();
-                formDataForUpload.append(
-                    "profile_picture",
-                    formData.profile_picture
-                );
+                try {
+                    // Generate a unique filename with the user's ID and timestamp
+                    const fileName = `${user.id}-${Date.now()}-${
+                        formData.profile_picture.name
+                    }`;
 
-                // Upload to Vercel Blob API endpoint
-                const uploadResponse = await fetch("/api/upload-avatar", {
-                    method: "POST",
-                    body: formDataForUpload,
-                });
+                    // Upload directly using Vercel Blob client
+                    const blobResult = await upload(
+                        fileName,
+                        formData.profile_picture,
+                        {
+                            access: "public",
+                            handleUploadUrl: "/api/avatar-upload",
+                        }
+                    );
 
-                const uploadResult = await uploadResponse.json();
-                if (!uploadResponse.ok) {
+                    profilePictureUrl = blobResult.url;
+                } catch (uploadError) {
+                    console.error("Error uploading image:", uploadError);
                     throw new Error(
-                        uploadResult.error || "Failed to upload image"
+                        "Failed to upload profile picture. Please try again."
                     );
                 }
-
-                profilePictureUrl = uploadResult.url;
             }
 
-            // Then, update the user profile
+            // Update the user profile
             const response = await UserService.updateProfile({
                 name: formData.name,
                 bio: formData.bio,
-                profile_picture_url: profilePictureUrl, // Send the URL instead of file
+                profile_picture_url: profilePictureUrl,
             });
 
             setSuccessMessage("Profile updated successfully!");
@@ -112,7 +109,9 @@ export default function ProfileModal({
         } catch (error) {
             console.error("Error updating profile:", error);
             setErrorMessage(
-                error.response?.data?.message || "Failed to update profile"
+                error.message ||
+                    error.response?.data?.message ||
+                    "Failed to update profile"
             );
         } finally {
             setIsLoading(false);
