@@ -9,13 +9,13 @@ use App\Http\Middleware\HandleTokenAuthentication;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use App\Http\Middleware\VerifyCsrfToken;
 
 
 return Application::configure(basePath: dirname(__DIR__))
