@@ -10,7 +10,17 @@ export default {
      * @returns {Promise} - API response with user data
      */
     getCurrentUser() {
-        return axios.get(`${getApiPrefix()}/user`);
+        const token = localStorage.getItem("auth_token");
+
+        if (token) {
+            return axios.get(`${getApiPrefix()}/user`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        } else {
+            return axios.get(`${getApiPrefix()}/user`, {
+                withCredentials: true,
+            });
+        }
     },
 
     /**

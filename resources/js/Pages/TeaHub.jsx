@@ -26,7 +26,25 @@ export default function TeaHub() {
             const response = await UserService.getCurrentUser();
             setCurrentUser(response.data.user);
         } catch (error) {
-            console.error("Failed to fetch user data:", error);
+            // Fallback to token-based authentication
+            const token = localStorage.getItem("auth_token");
+            if (token) {
+                try {
+                    const tokenResponse = await UserService.getCurrentUser({
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setCurrentUser(tokenResponse.data.user);
+                } catch (tokenError) {
+                    console.error(
+                        "Both session and token authentication failed:",
+                        tokenError
+                    );
+                    setCurrentUser(null);
+                }
+            } else {
+                console.error("No API token found. User is not authenticated.");
+                setCurrentUser(null);
+            }
         }
     };
 

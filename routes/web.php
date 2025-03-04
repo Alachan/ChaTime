@@ -17,7 +17,7 @@ Route::middleware(['guest'])->group(function () {
 });
 
 // Authenticated routes
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::get('/teahub', [TeaHubController::class, 'index'])->name('teahub');
 });
 
