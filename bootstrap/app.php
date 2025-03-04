@@ -46,9 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
-            StartSession::class,
+            StartSession::class,  // Ensure session is started first
             ShareErrorsFromSession::class,
-            VerifyCsrfToken::class,
+            VerifyCsrfToken::class,  // CSRF token check should come after session
             HandleTokenAuthentication::class,
             SubstituteBindings::class,
         ]);
