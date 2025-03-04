@@ -26,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->use([
-            HandleTokenAuthentication::class,
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
@@ -48,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
+            HandleTokenAuthentication::class,
             SubstituteBindings::class,
         ]);
 
