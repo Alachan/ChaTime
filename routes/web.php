@@ -5,8 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\TeaHubController;
 use App\Http\Middleware\RedirectIfAuthenticated;
 
-// Auth routes (login/register) with middleware to redirect if already authenticated
-Route::middleware([RedirectIfAuthenticated::class])->group(function () {
+// Guest routes
+Route::middleware(['guest'])->group(function () {
     Route::get('/login', function () {
         return Inertia::render('Login');
     })->name('login');
@@ -16,6 +16,12 @@ Route::middleware([RedirectIfAuthenticated::class])->group(function () {
     })->name('register');
 });
 
-Route::middleware(['web', 'auth:sanctum'])->group(function () {
+// Authenticated routes
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/teahub', [TeaHubController::class, 'index'])->name('teahub');
+});
+
+// Fallback route - redirect to login if not logged in
+Route::get('/', function () {
+    return redirect('/login');
 });
