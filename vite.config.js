@@ -17,6 +17,6 @@ export default defineConfig({
     },
     base:
         process.env.APP_ENV === "production"
-            ? "https://cha-time.vercel.app/"
+            ? "https://cha-time.vercel.app/build/"
             : "/",
 });
