@@ -38,7 +38,7 @@ class AuthController extends Controller
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
                 null,     // Domain (null = current domain)
-                true, // Change to true for HTTPS
+                request()->secure(), // Change to true for HTTPS
                 true, // Change to true for security
                 false,            // Raw
                 'lax'             // SameSite
@@ -98,7 +98,7 @@ class AuthController extends Controller
                 60 * 24 * 7,      // Duration in minutes
                 '/',              // Path
                 null,             // Domain (null = current domain)
-                true, // Change to true for HTTPS
+                request()->secure(), // Change to true for HTTPS
                 true, // Change to true for security
                 false,            // Raw
                 'lax'             // SameSite
