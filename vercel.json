@@ -37,6 +37,7 @@
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie"
     },
+    "rewrites": [{ "source": "/api/api/(.*)", "destination": "/api/$1" }],
     "build": {
         "env": {
             "VERCEL_BUILD_SCRIPT": "php artisan route:clear && php artisan config:clear"
