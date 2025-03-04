@@ -30,7 +30,6 @@ return Application::configure(basePath: dirname(__DIR__))
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
-            HandleTokenAuthentication::class,
         ]);
 
         $middleware->api(append: [
@@ -46,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,  // Ensure session is started first
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,  // CSRF token check should come after session
+            HandleTokenAuthentication::class,
             SubstituteBindings::class,
         ]);
 
