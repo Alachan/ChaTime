@@ -10,7 +10,7 @@ export default {
      * @returns {Promise} - API response with user data
      */
     getCurrentUser() {
-        return axios.get("/api/user");
+        return axios.get(`${getApiPrefix()}/user`);
     },
 
     /**
@@ -20,7 +20,7 @@ export default {
      * @returns {Promise} - API response
      */
     updateProfile(profileData) {
-        return axios.post("/api/user/update", profileData);
+        return axios.post(`${getApiPrefix()}/user/update`, profileData);
     },
 
     /**
@@ -29,7 +29,7 @@ export default {
      * @returns {Promise} - API response
      */
     logout() {
-        return axios.post("/api/logout");
+        return axios.post(`${getApiPrefix()}/logout`);
     },
 
     /**
