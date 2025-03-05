@@ -1,6 +1,7 @@
 # ChaTime - Brew Connections, Steep Conversations
 
 A real-time chat application built with Laravel, React, and WebSockets that offers secure, feature-rich communication in themed chatrooms.
+[Try it out!]([https://link-url-here.org](https://cha-time.vercel.app/))
 
 ## 🍵 Overview
 
