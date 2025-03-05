@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import UserService from "@/Services/UserService";
-import { upload } from "@vercel/blob/client";
 
 export default function ProfileModal({
     isOpen,
@@ -59,36 +58,38 @@ export default function ProfileModal({
         setErrorMessage("");
         setSuccessMessage("");
 
-        try {
-            // Upload profile picture if provided
-            let profilePictureUrl = null;
-            if (formData.profile_picture instanceof File) {
-                try {
-                    const file = formData.profile_picture;
+        let profilePictureUrl = formData.profile_picture_url; // Keep existing Cloudinary URL
 
-                    const newBlob = await upload(file.name, file, {
-                        access: "public",
-                    });
-
-                    console.log("Uploaded image:", newBlob);
-                    profilePictureUrl = newBlob.url;
-                } catch (error) {
-                    console.error("Error uploading image:", error);
-                    throw new Error("Failed to upload profile picture");
-                }
+        // Step 1: Upload avatar if a new file is selected
+        if (formData.profile_picture instanceof File) {
+            try {
+                const uploadResponse = await UserService.uploadAvatar(
+                    formData.profile_picture
+                );
+                profilePictureUrl = uploadResponse.data.profile_picture_url; // Get Cloudinary URL
+            } catch (error) {
+                console.error("Avatar upload error:", error);
+                setErrorMessage(
+                    error.response?.data?.message || "Avatar upload failed."
+                );
+                setIsLoading(false);
+                return;
             }
+        }
 
-            // Only after successful image upload (if needed), update the profile
+        // Step 2: Update user profile
+        try {
             const response = await UserService.updateProfile({
                 name: formData.name,
                 bio: formData.bio,
-                profile_picture_url: profilePictureUrl,
+                profile_picture_url: profilePictureUrl, // Use Cloudinary URL
             });
 
+            const updatedUser = response.data.user;
             setSuccessMessage("Profile updated successfully!");
 
-            if (onProfileUpdate && response.data.user) {
-                onProfileUpdate(response.data.user);
+            if (onProfileUpdate && updatedUser) {
+                onProfileUpdate(updatedUser);
             }
 
             setTimeout(() => {
@@ -96,8 +97,10 @@ export default function ProfileModal({
                 setSuccessMessage("");
             }, 500);
         } catch (error) {
-            console.error("Error updating profile:", error);
-            setErrorMessage(error.message || "Failed to update profile");
+            console.error("Profile update error:", error);
+            setErrorMessage(
+                error.response?.data?.message || "Failed to update profile."
+            );
         } finally {
             setIsLoading(false);
         }

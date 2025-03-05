@@ -14,12 +14,7 @@ class UserController extends Controller
      */
     public function me(Request $request)
     {
-        // Try session-based authentication
-        // if (Auth::check()) {
-        //     return response()->json(['user' => Auth::user()]);
-        // }
 
-        // Try API token-based authentication
         $user = $request->user();
         if ($user) {
             return response()->json(['user' => $user]);

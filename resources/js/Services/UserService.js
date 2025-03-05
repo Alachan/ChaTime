@@ -24,6 +24,23 @@ export default {
     },
 
     /**
+     * Upload user avatar to Cloudinary
+     *
+     * @param {File} avatar - The avatar file
+     * @returns {Promise} - API response containing the uploaded image URL
+     */
+    uploadAvatar: (avatar) => {
+        const formData = new FormData();
+        formData.append("avatar", avatar);
+
+        return axios.post(`${getApiPrefix()}/upload-avatar`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+    },
+
+    /**
      * Log the user out
      *
      * @returns {Promise} - API response
