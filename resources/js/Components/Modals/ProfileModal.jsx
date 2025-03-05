@@ -67,7 +67,7 @@ export default function ProfileModal({
                     uploadData.append("file", formData.profile_picture);
 
                     // Send to the upload endpoint
-                    const response = await fetch("/api/upload", {
+                    const response = await fetch("/api/api/upload", {
                         method: "POST",
                         body: uploadData,
                     });
