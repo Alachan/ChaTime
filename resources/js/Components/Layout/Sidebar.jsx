@@ -99,7 +99,7 @@ export default function Sidebar({
                         >
                             {user?.profile_picture ? (
                                 <img
-                                    src={`/storage/${user.profile_picture}`}
+                                    src={user.profile_picture}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />
