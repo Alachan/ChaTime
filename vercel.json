@@ -43,7 +43,7 @@
     },
     "build": {
         "env": {
-            "VERCEL_BUILD_SCRIPT": "php artisan route:clear && php artisan config:clear"
+            "VERCEL_BUILD_SCRIPT": "composer install --no-dev --prefer-dist --optimize-autoloader && php artisan route:clear && php artisan config:clear"
         }
     }
 }
