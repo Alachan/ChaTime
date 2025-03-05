@@ -13,8 +13,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Use busboy to parse multipart form data
         const bb = busboy({ headers: req.headers });
+        req.pipe(bb); // Move this up to ensure immediate processing.
 
         let fileBuffer = null;
         let fileName = "";
@@ -31,23 +31,31 @@ export default async function handler(req, res) {
 
             file.on("end", () => {
                 fileBuffer = Buffer.concat(chunks);
+                console.log(
+                    `Received file: ${fileName} (${fileBuffer.length} bytes)`
+                );
             });
         });
 
-        // Handle completion
-        const uploadComplete = new Promise((resolve, reject) => {
-            bb.on("finish", resolve);
+        // Wait for file processing
+        const fileProcessed = new Promise((resolve, reject) => {
+            bb.on("finish", () => {
+                if (fileBuffer) {
+                    resolve();
+                } else {
+                    reject(new Error("No file buffer found"));
+                }
+            });
             bb.on("error", reject);
-            req.pipe(bb);
         });
 
-        await uploadComplete;
+        await fileProcessed;
 
         if (!fileBuffer) {
             return res.status(400).json({ error: "No file received" });
         }
 
-        // Generate a unique filename
+        // Generate unique filename
         const uniqueName = `avatar-${Date.now()}-${fileName || "image.jpg"}`;
 
         // Upload to Vercel Blob
@@ -55,6 +63,7 @@ export default async function handler(req, res) {
             access: "public",
         });
 
+        console.log("Blob URL:", blob.url);
         return res.status(200).json({ url: blob.url });
     } catch (error) {
         console.error("Error in blob upload:", error);

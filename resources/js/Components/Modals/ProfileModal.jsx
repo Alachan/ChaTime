@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import UserService from "@/Services/UserService";
-import { upload } from "@vercel/blob/client";
 
 export default function ProfileModal({
     isOpen,
