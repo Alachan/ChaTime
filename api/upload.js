@@ -1,72 +1,49 @@
-import { put } from "@vercel/blob";
-import busboy from "busboy";
+import { handleUpload } from "@vercel/blob/client";
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
-export default async function handler(req, res) {
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
-    }
+export default async function handler(request, response) {
+    const body = await request.json();
 
     try {
-        const bb = busboy({ headers: req.headers });
-        req.pipe(bb); // Move this up to ensure immediate processing.
+        const jsonResponse = await handleUpload({
+            body,
+            request,
+            onBeforeGenerateToken: async (pathname /*, clientPayload */) => {
+                // Generate a client token for the browser to upload the file
+                // ⚠️ Authenticate and authorize users before generating the token.
+                // Otherwise, you're allowing anonymous uploads.
 
-        let fileBuffer = null;
-        let fileName = "";
+                return {
+                    allowedContentTypes: [
+                        "image/jpeg",
+                        "image/png",
+                        "image/gif",
+                    ],
+                    tokenPayload: JSON.stringify({
+                        // optional, sent to your server on upload completion
+                        // you could pass a user id from auth, or a value from clientPayload
+                    }),
+                };
+            },
+            onUploadCompleted: async ({ blob, tokenPayload }) => {
+                // Get notified of client upload completion
+                // ⚠️ This will not work on `localhost` websites,
+                // Use ngrok or similar to get the full upload flow
 
-        // Handle file upload
-        bb.on("file", (name, file, info) => {
-            const { filename, mimeType } = info;
-            fileName = filename;
+                console.log("blob upload completed", blob, tokenPayload);
 
-            const chunks = [];
-            file.on("data", (data) => {
-                chunks.push(data);
-            });
-
-            file.on("end", () => {
-                fileBuffer = Buffer.concat(chunks);
-                console.log(
-                    `Received file: ${fileName} (${fileBuffer.length} bytes)`
-                );
-            });
-        });
-
-        // Wait for file processing
-        const fileProcessed = new Promise((resolve, reject) => {
-            bb.on("finish", () => {
-                if (fileBuffer) {
-                    resolve();
-                } else {
-                    reject(new Error("No file buffer found"));
+                try {
+                    // Run any logic after the file upload completed
+                    // const { userId } = JSON.parse(tokenPayload);
+                    // await db.update({ avatar: blob.url, userId });
+                } catch (error) {
+                    throw new Error("Could not update user");
                 }
-            });
-            bb.on("error", reject);
+            },
         });
 
-        await fileProcessed;
-
-        if (!fileBuffer) {
-            return res.status(400).json({ error: "No file received" });
-        }
-
-        // Generate unique filename
-        const uniqueName = `avatar-${Date.now()}-${fileName || "image.jpg"}`;
-
-        // Upload to Vercel Blob
-        const blob = await put(uniqueName, fileBuffer, {
-            access: "public",
-        });
-
-        console.log("Blob URL:", blob.url);
-        return res.status(200).json({ url: blob.url });
+        return response.status(200).json(jsonResponse);
     } catch (error) {
-        console.error("Error in blob upload:", error);
-        return res.status(500).json({ error: error.message });
+        // The webhook will retry 5 times waiting for a 200
+        return response.status(400).json({ error: error.message });
     }
 }

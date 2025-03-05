@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import UserService from "@/Services/UserService";
+import { upload } from "@vercel/blob/client";
 
 export default function ProfileModal({
     isOpen,
@@ -53,31 +54,22 @@ export default function ProfileModal({
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setErrorMessage("");
-        setSuccessMessage("");
         try {
             // Upload profile picture if provided
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
                 try {
-                    // Simple FormData approach
-                    const uploadData = new FormData();
-                    uploadData.append("file", formData.profile_picture);
+                    const file = formData.profile_picture;
 
-                    // Send to the upload endpoint
-                    const response = await fetch("/api/api/upload", {
-                        method: "POST",
-                        body: uploadData,
+                    const newBlob = await upload(file.name, file, {
+                        access: "public",
+                        handleUploadUrl: "/api/upload",
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`Upload failed: ${response.status}`);
+                    if (!newBlob) {
+                        throw new Error(`Upload failed: ${newBlob}`);
                     }
-
-                    const result = await response.json();
-                    profilePictureUrl = result.url;
+                    profilePictureUrl = newBlob.url;
                 } catch (error) {
                     console.error("Error uploading image:", error);
                     throw new Error("Failed to upload profile picture");
