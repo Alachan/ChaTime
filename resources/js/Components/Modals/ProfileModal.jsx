@@ -54,6 +54,11 @@ export default function ProfileModal({
     };
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage("");
+        setSuccessMessage("");
+
         try {
             // Upload profile picture if provided
             let profilePictureUrl = null;
