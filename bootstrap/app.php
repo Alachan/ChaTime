@@ -28,10 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
-            HandleTokenAuthentication::class,
         ]);
 
         $middleware->api(append: [
+            HandleTokenAuthentication::class,
             // For API routes, you need stateful requests so cookies work with tokens
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
@@ -39,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             EncryptCookies::class,
+            HandleTokenAuthentication::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
