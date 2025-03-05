@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class AuthController extends Controller
 {
@@ -32,30 +33,26 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             // Create the cookie explicitly
-            $cookie = cookie(
-                'auth_token',     // Cookie name
-                $token,           // Cookie value
-                60 * 24 * 7,      // Duration in minutes
-                '/',              // Path
-                null,     // Domain (null = current domain)
-                request()->secure(), // Change to true for HTTPS
-                true, // Change to true for security
-                false,            // Raw
-                'lax'             // SameSite
+            $rawCookie = new Cookie(
+                'auth_token',         // name
+                $token,               // value
+                time() + (60 * 24 * 7 * 60),  // expires (1 week)
+                '/',                  // path
+                null,                 // domain
+                request()->secure(),  // secure
+                false,                // httpOnly
+                false,                // raw
+                'lax'                 // sameSite
             );
 
-            // Debug for server-side logging
-            Log::info('Setting auth cookie', [
+            $response = response()->json([
+                'user' => $user,
                 'token' => $token,
-                'cookie_created' => !empty($cookie)
             ]);
 
-            return response()
-                ->json([
-                    'user' => $user,
-                    'token' => $token,
-                ])
-                ->cookie($cookie);
+            // Attach the raw cookie to the response
+            $response->headers->setCookie($rawCookie);
+            return $response;
         } catch (ValidationException $e) {
             // Re-throw validation exceptions to be handled by Laravel's validator
             throw $e;
@@ -91,31 +88,26 @@ class AuthController extends Controller
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Create the cookie explicitly
-            $cookie = cookie(
-                'auth_token',     // Cookie name
-                $token,           // Cookie value
-                60 * 24 * 7,      // Duration in minutes
-                '/',              // Path
-                null,             // Domain (null = current domain)
-                request()->secure(), // Change to true for HTTPS
-                true, // Change to true for security
-                false,            // Raw
-                'lax'             // SameSite
+            $rawCookie = new Cookie(
+                'auth_token',         // name
+                $token,               // value
+                time() + (60 * 24 * 7 * 60),  // expires (1 week)
+                '/',                  // path
+                null,                 // domain
+                request()->secure(),  // secure
+                false,                // httpOnly
+                false,                // raw
+                'lax'                 // sameSite
             );
 
-            // Debug for server-side logging
-            Log::info('Setting auth cookie', [
+            $response = response()->json([
+                'user' => $user,
                 'token' => $token,
-                'cookie_created' => !empty($cookie)
             ]);
 
-            return response()
-                ->json([
-                    'user' => $user,
-                    'token' => $token,
-                ])
-                ->cookie($cookie);
+            // Attach the raw cookie to the response
+            $response->headers->setCookie($rawCookie);
+            return $response;
         } catch (ValidationException $e) {
             // Re-throw validation exceptions to be handled by Laravel's validator
             throw $e;
