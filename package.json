@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@vercel/blob": "^0.27.2",
+        "busboy": "^1.6.0",
         "framer-motion": "^12.4.7",
         "react-hot-toast": "^2.5.2"
     }

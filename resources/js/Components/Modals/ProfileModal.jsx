@@ -63,20 +63,14 @@ export default function ProfileModal({
             let profilePictureUrl = null;
             if (formData.profile_picture instanceof File) {
                 try {
-                    // Create a reader to get the file as ArrayBuffer
-                    const arrayBuffer =
-                        await formData.profile_picture.arrayBuffer();
+                    // Simple FormData approach
+                    const uploadData = new FormData();
+                    uploadData.append("file", formData.profile_picture);
 
-                    // Convert to regular Buffer
-                    const buffer = Buffer.from(arrayBuffer);
-
-                    // Send raw binary data to the upload endpoint
+                    // Send to the upload endpoint
                     const response = await fetch("/api/upload", {
                         method: "POST",
-                        body: buffer,
-                        headers: {
-                            "Content-Type": "application/octet-stream",
-                        },
+                        body: uploadData,
                     });
 
                     if (!response.ok) {
