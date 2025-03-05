@@ -34,7 +34,7 @@ class AuthController extends Controller
 
             // Create the cookie explicitly
             $rawCookie = new Cookie(
-                'auth_token',         // name
+                'token',         // name
                 $token,               // value
                 time() + (60 * 24 * 7 * 60),  // expires (1 week)
                 '/',                  // path
@@ -89,7 +89,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $rawCookie = new Cookie(
-                'auth_token',         // name
+                'token',         // name
                 $token,               // value
                 time() + (60 * 24 * 7 * 60),  // expires (1 week)
                 '/',                  // path

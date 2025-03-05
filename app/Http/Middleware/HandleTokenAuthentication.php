@@ -11,7 +11,7 @@ class HandleTokenAuthentication
     public function handle(Request $request, Closure $next)
     {
         $bearerToken = $request->bearerToken();
-        $cookieToken = $request->cookie('auth_token');
+        $cookieToken = $request->cookie('token');
 
         Log::info('Auth Check', [
             'url' => $request->url(),
