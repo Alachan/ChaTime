@@ -47,7 +47,12 @@ The application was designed with user experience at its core:
 
 ## 📸 Screenshots
 
-[Include screenshots of different app sections here]
+![image](https://github.com/user-attachments/assets/59af9816-d423-4b30-8e19-9bcaf5ae0dd0)
+![image](https://github.com/user-attachments/assets/74f52e5e-ad44-4446-b344-faff0a72fbdd)
+![image](https://github.com/user-attachments/assets/6f44d61b-bb40-470d-89cf-822f6c16313a)
+![image](https://github.com/user-attachments/assets/25f4321d-ed27-4e70-a739-0b98e7ea04b8)
+![image](https://github.com/user-attachments/assets/9ddc3895-a5fe-4b50-807b-3c411acfd17c)
+![image](https://github.com/user-attachments/assets/108557ee-6249-42dc-86ca-b994f9116544)
 
 ## 🚀 Getting Started
 
