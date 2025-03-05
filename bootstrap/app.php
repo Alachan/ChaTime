@@ -32,22 +32,23 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(append: [
-            AddQueuedCookiesToResponse::class, // Ensure cookies are sent back
-            StartSession::class, // Ensure session is available
+            // For API routes, you need stateful requests so cookies work with tokens
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
 
         $middleware->web(append: [
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-            EnsureFrontendRequestsAreStateful::class,
+            EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
+            // This is critical for making Sanctum work with your web routes
+            EnsureFrontendRequestsAreStateful::class,
             HandleTokenAuthentication::class,
             SubstituteBindings::class,
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         //
