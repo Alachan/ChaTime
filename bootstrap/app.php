@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             PreventRequestsDuringMaintenance::class,
             ValidatePostSize::class,
             ConvertEmptyStringsToNull::class,
+            HandleTokenAuthentication::class,
         ]);
 
         $middleware->api(append: [
@@ -45,7 +46,6 @@ return Application::configure(basePath: dirname(__DIR__))
             VerifyCsrfToken::class,
             // This is critical for making Sanctum work with your web routes
             EnsureFrontendRequestsAreStateful::class,
-            HandleTokenAuthentication::class,
             SubstituteBindings::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
