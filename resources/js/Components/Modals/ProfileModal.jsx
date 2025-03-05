@@ -68,7 +68,6 @@ export default function ProfileModal({
 
                     const newBlob = await upload(file.name, file, {
                         access: "public",
-                        handleUploadUrl: "/api/upload",
                     });
 
                     console.log("Uploaded image:", newBlob);
