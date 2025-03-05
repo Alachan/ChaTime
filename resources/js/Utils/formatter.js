@@ -173,7 +173,7 @@ export function getUserAvatar(user) {
     if (user.profile_picture) {
         return {
             type: "image",
-            content: `/storage/${user.profile_picture}`,
+            content: user.profile_picture,
         };
     }
 

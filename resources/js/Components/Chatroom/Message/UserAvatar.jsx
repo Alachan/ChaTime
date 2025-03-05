@@ -5,7 +5,7 @@ export function UserAvatar({ user, position = "left" }) {
     const avatarType = user?.profile_picture ? "image" : "initial";
     const avatarContent =
         avatarType === "image"
-            ? `/storage/${user.profile_picture}`
+            ? user.profile_picture
             : user?.name?.charAt(0) || "?";
 
     return (
