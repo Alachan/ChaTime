@@ -71,9 +71,7 @@ export default function ProfileModal({
                         handleUploadUrl: "/api/upload",
                     });
 
-                    if (!newBlob) {
-                        throw new Error(`Upload failed: ${newBlob}`);
-                    }
+                    console.log("Uploaded image:", newBlob);
                     profilePictureUrl = newBlob.url;
                 } catch (error) {
                     console.error("Error uploading image:", error);
