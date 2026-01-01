@@ -37,28 +37,17 @@ return Application::configure(basePath: dirname(__DIR__))
             SubstituteBindings::class,
         ]);
 
-        // On Vercel (serverless), disable session middleware since we use token auth
-        $isVercel = env('APP_ENV') === 'production';
-
-        $webMiddleware = [
+        $middleware->web(append: [
             EncryptCookies::class,
             HandleTokenAuthentication::class,
-        ];
-
-        // Only add session-related middleware in non-serverless environments
-        if (!$isVercel) {
-            $webMiddleware[] = AddQueuedCookiesToResponse::class;
-            $webMiddleware[] = StartSession::class;
-            $webMiddleware[] = ShareErrorsFromSession::class;
-            $webMiddleware[] = VerifyCsrfToken::class;
-            $webMiddleware[] = EnsureFrontendRequestsAreStateful::class;
-        }
-
-        $webMiddleware[] = SubstituteBindings::class;
-        $webMiddleware[] = HandleInertiaRequests::class;
-        $webMiddleware[] = AddLinkHeadersForPreloadedAssets::class;
-
-        $middleware->web(append: $webMiddleware);
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class,
+            SubstituteBindings::class,
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
+        ]);
 
         //
     })

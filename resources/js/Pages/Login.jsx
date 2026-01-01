@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import SakuraEffect from "@/Components/Effects/SakuraEffect";
 import UserService from "@/Services/UserService";
-import axios from "axios";
 
 export default function Login() {
     const { data, setData, processing, errors } = useForm({
@@ -14,10 +13,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            // First get CSRF cookie
-            await axios.get("/sanctum/csrf-cookie");
-
-            // Then attempt login
+            // Attempt login (no CSRF needed for token auth)
             const response = await UserService.login(data);
 
             // Store token in localStorage
