@@ -30,12 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ConvertEmptyStringsToNull::class,
         ]);
 
-        $middleware->api(append: [
+        // Build API middleware array
+        $apiMiddleware = [
             HandleTokenAuthentication::class,
-            // For API routes, you need stateful requests so cookies work with tokens
-            EnsureFrontendRequestsAreStateful::class,
-            SubstituteBindings::class,
-        ]);
+        ];
+
+        // Only add stateful middleware in non-production (requires sessions)
+        if (env('APP_ENV') !== 'production') {
+            $apiMiddleware[] = EnsureFrontendRequestsAreStateful::class;
+        }
+
+        $apiMiddleware[] = SubstituteBindings::class;
+
+        $middleware->api(append: $apiMiddleware);
 
         // Build web middleware array
         $webMiddleware = [
