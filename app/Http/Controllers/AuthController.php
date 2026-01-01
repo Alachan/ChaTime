@@ -34,15 +34,15 @@ class AuthController extends Controller
 
             // Create the cookie explicitly
             $rawCookie = new Cookie(
-                'token',         // name
+                'token',              // name
                 $token,               // value
-                time() + (60 * 24 * 7 * 60),  // expires (1 week)
+                time() + (60 * 60 * 24 * 7),  // expires (1 week)
                 '/',                  // path
-                null,                 // domain
-                request()->secure(),  // secure
-                false,                // httpOnly
+                '',                   // domain - empty string means current domain
+                true,                 // secure (HTTPS only)
+                false,                // httpOnly - false so localStorage can also access
                 false,                // raw
-                'lax'                 // sameSite
+                'lax'                 // sameSite - 'lax' for same-site requests
             );
 
             $response = response()->json([
@@ -89,15 +89,15 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $rawCookie = new Cookie(
-                'token',         // name
+                'token',              // name
                 $token,               // value
-                time() + (60 * 24 * 7 * 60),  // expires (1 week)
+                time() + (60 * 60 * 24 * 7),  // expires (1 week)
                 '/',                  // path
-                null,                 // domain
-                request()->secure(),  // secure
-                false,                // httpOnly
+                '',                   // domain - empty string means current domain
+                true,                 // secure (HTTPS only)
+                false,                // httpOnly - false so localStorage can also access
                 false,                // raw
-                'lax'                 // sameSite
+                'lax'                 // sameSite - 'lax' for same-site requests
             );
 
             $response = response()->json([
