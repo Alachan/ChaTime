@@ -37,19 +37,28 @@ return Application::configure(basePath: dirname(__DIR__))
             SubstituteBindings::class,
         ]);
 
-        $middleware->web(append: [
+        // On Vercel (serverless), disable session middleware since we use token auth
+        $isVercel = env('APP_ENV') === 'production';
+
+        $webMiddleware = [
             EncryptCookies::class,
             HandleTokenAuthentication::class,
-            AddQueuedCookiesToResponse::class,
-            StartSession::class,
-            ShareErrorsFromSession::class,
-            VerifyCsrfToken::class,
-            // This is critical for making Sanctum work with your web routes
-            EnsureFrontendRequestsAreStateful::class,
-            SubstituteBindings::class,
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-        ]);
+        ];
+
+        // Only add session-related middleware in non-serverless environments
+        if (!$isVercel) {
+            $webMiddleware[] = AddQueuedCookiesToResponse::class;
+            $webMiddleware[] = StartSession::class;
+            $webMiddleware[] = ShareErrorsFromSession::class;
+            $webMiddleware[] = VerifyCsrfToken::class;
+            $webMiddleware[] = EnsureFrontendRequestsAreStateful::class;
+        }
+
+        $webMiddleware[] = SubstituteBindings::class;
+        $webMiddleware[] = HandleInertiaRequests::class;
+        $webMiddleware[] = AddLinkHeadersForPreloadedAssets::class;
+
+        $middleware->web(append: $webMiddleware);
 
         //
     })
