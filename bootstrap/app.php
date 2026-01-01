@@ -37,17 +37,25 @@ return Application::configure(basePath: dirname(__DIR__))
             SubstituteBindings::class,
         ]);
 
-        $middleware->web(append: [
+        // Build web middleware array
+        $webMiddleware = [
             EncryptCookies::class,
             HandleTokenAuthentication::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
-            VerifyCsrfToken::class,
-            SubstituteBindings::class,
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-        ]);
+        ];
+
+        // Only add CSRF protection in non-production (we use token auth in production)
+        if (env('APP_ENV') !== 'production') {
+            $webMiddleware[] = VerifyCsrfToken::class;
+        }
+
+        $webMiddleware[] = SubstituteBindings::class;
+        $webMiddleware[] = HandleInertiaRequests::class;
+        $webMiddleware[] = AddLinkHeadersForPreloadedAssets::class;
+
+        $middleware->web(append: $webMiddleware);
 
         //
     })
