@@ -16,4 +16,17 @@ class VerifyCsrfToken extends Middleware
         'api/api/*',
         'broadcasting/auth',
     ];
+
+    /**
+     * Determine if the request has a URI that should pass through CSRF verification.
+     */
+    protected function inExceptArray($request)
+    {
+        // Disable CSRF in production (Vercel) since we use token auth
+        if (env('APP_ENV') === 'production') {
+            return true;
+        }
+
+        return parent::inExceptArray($request);
+    }
 }
